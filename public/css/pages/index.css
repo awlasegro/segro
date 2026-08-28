@@ -1,0 +1,902 @@
+/* Exact SEGRO Brand Colors & Layout Reset */
+:root {
+    --segro-red: #CC171F;
+    --segro-red-hover: #9B0F15;
+    --segro-dark-bg: #0C0D0E;
+    --segro-card-bg: #000000;
+    --segro-border: #242528;
+    --segro-text-white: #FFFFFF;
+    --segro-text-grey: #A2A4A8;
+}
+
+body {
+    background-color: var(--segro-dark-bg);
+    color: var(--segro-text-white);
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+    letter-spacing: -0.1px;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* 1. Dark Top Header Bar */
+.top-header {
+    background-color: #000000;
+    padding: 14px 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.3);
+    font-size: 11px;
+    font-weight: 500;
+    position: relative;
+    z-index: 1001;
+}
+
+.logo {
+    cursor: pointer;
+}
+
+.logo img {
+    height: 24px;
+    object-fit: contain;
+    display: block;
+}
+
+.top-header-logo img {
+    filter: invert(1) hue-rotate(180deg);
+}
+
+.top-header-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    color: #ffffff;
+}
+
+.share-quote {
+    color: var(--segro-text-grey);
+    font-weight: 400;
+}
+
+.top-header-link {
+    transition: opacity 0.2s;
+    color: #ffffff;
+    font-weight: 500;
+}
+.top-header-link:hover {
+    opacity: 0.8;
+}
+
+.icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #ffffff;
+    opacity: 0.9;
+    transition: opacity 0.2s;
+}
+.icon-btn:hover {
+    opacity: 1;
+}
+
+.lang-selector {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    color: #ffffff;
+    font-weight: 500;
+}
+
+.login-pill-btn {
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 20px;
+    padding: 6px 20px;
+    font-weight: 600;
+    color: #ffffff;
+    transition: background var(--transition-speed), border-color var(--transition-speed);
+}
+.login-pill-btn:hover {
+    border-color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Hamburger Menu Icon styling */
+.mobile-menu-trigger {
+    display: none;
+    cursor: pointer;
+}
+
+.hamburger-circle {
+    width: 36px;
+    height: 36px;
+    border: 1px dashed rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: border-color var(--transition-speed);
+}
+
+.hamburger-bar {
+    width: 14px;
+    height: 1.5px;
+    background-color: #FFFFFF;
+}
+
+/* 2. Light Sub-Navigation Menu Bar */
+.sub-nav {
+    background-color: #FFFFFF;
+    padding: 12px 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    border-bottom: 1px solid #E2E5EB;
+}
+
+.nav-links {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+}
+
+.nav-link {
+    color: #121213;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'Barlow', sans-serif;
+    letter-spacing: 0.2px;
+    transition: color 0.2s;
+}
+.nav-link:hover {
+    color: var(--segro-red);
+}
+
+.property-btn {
+    background-color: var(--segro-red);
+    color: #FFFFFF;
+    font-size: 13.5px;
+    font-weight: 700;
+    font-family: 'Barlow', sans-serif;
+    border-radius: 25px;
+    padding: 10px 28px;
+    transition: background var(--transition-speed);
+    letter-spacing: 0.2px;
+    display: inline-block;
+}
+.property-btn:hover {
+    background-color: var(--segro-red-hover);
+}
+
+/* 3. Main Workspace Layout */
+.main-layout {
+    display: flex;
+    padding: 40px 50px;
+    gap: 40px;
+    max-width: 1440px;
+    margin: 0 auto;
+    flex-direction: row;
+}
+
+/* Sidebar Interests */
+.sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    display: flex;
+    border-right: 1px dashed #242528;
+    padding-right: 25px;
+}
+
+.vertical-strip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: 45px;
+    margin-right: 20px;
+    color: var(--segro-text-grey);
+    padding-bottom: 20px;
+    border-right: 1px dashed #242528;
+    padding-right: 15px;
+}
+
+.vertical-strip-top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.vertical-index {
+    width: 24px;
+    height: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.vertical-title {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-family: 'Barlow', sans-serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: #FFFFFF;
+    letter-spacing: 1.5px;
+    margin-top: 20px;
+}
+
+.sidebar-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.sidebar-welcome h1 {
+    font-family: 'Barlow', sans-serif;
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1.05;
+    margin: 0 0 12px 0;
+    color: #FFFFFF;
+    letter-spacing: -0.5px;
+}
+
+.sidebar-welcome p {
+    font-size: 12px;
+    color: var(--segro-text-grey);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.filter-list {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-item {
+    display: flex;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px dotted #2d2f34;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.2s;
+    gap: 12px;
+}
+.filter-item:hover {
+    color: var(--segro-red);
+}
+
+.filter-radio {
+    width: 10px;
+    height: 10px;
+    border: 1.5px solid rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.filter-item:hover .filter-radio {
+    border-color: var(--segro-red);
+}
+
+/* ---------------------------------------------------- */
+/* Exact Screenshot Columns & Card Grid Placement       */
+/* ---------------------------------------------------- */
+.content-grid-container {
+    flex: 1;
+    display: flex;
+    gap: 24px;
+}
+
+.grid-column-left {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.grid-column-right {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.grid-card {
+    background-color: var(--segro-card-bg);
+    border: 1px solid var(--segro-border);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform var(--transition-speed);
+}
+.grid-card:hover {
+    transform: translateY(-4px);
+}
+
+.hero-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-img-wrapper {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Hero images sized to align divisions horizontally */
+.hero-card .card-img-wrapper {
+    height: 280px;
+}
+
+.card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s;
+}
+.grid-card:hover .card-img {
+    transform: scale(1.02);
+}
+
+.card-body {
+    padding: 24px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background-color: #000000;
+    flex: 1;
+    justify-content: space-between;
+}
+
+.card-body p {
+    font-size: 15px;
+    line-height: 1.6;
+    color: #FFFFFF;
+    margin: 0;
+    font-weight: 500;
+}
+
+/* Corporate Link with Arrow Circle */
+.arrow-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+    font-size: 13.5px;
+    color: #FFFFFF;
+    transition: opacity 0.2s;
+    cursor: pointer;
+    margin-top: 10px;
+    font-family: 'Barlow', sans-serif;
+    letter-spacing: 0.2px;
+}
+.arrow-link:hover {
+    opacity: 0.8;
+}
+
+.arrow-circle {
+    width: 32px;
+    height: 32px;
+    border: 1.5px solid rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFFFFF;
+    transition: background var(--transition-speed), border-color var(--transition-speed);
+}
+.arrow-link:hover .arrow-circle {
+    border-color: #FFFFFF;
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Left Hero Card Specific Arrow styles: White bg circle, black arrow, underlined text */
+.hero-card .arrow-circle {
+    background-color: #FFFFFF;
+    border-color: #FFFFFF;
+    color: #000000;
+}
+.hero-card .arrow-link span:not(.arrow-circle) {
+    text-decoration: underline;
+}
+
+/* Horizontal Split Card */
+.split-card {
+    display: flex;
+    flex-direction: row;
+    height: 220px;
+    flex-shrink: 0;
+}
+
+.split-text {
+    width: 50%;
+    background-color: #000000;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.split-text h3 {
+    font-family: 'Barlow', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    margin: 0 0 10px 0;
+    color: #FFFFFF;
+    line-height: 1.15;
+    letter-spacing: -0.2px;
+}
+
+.split-text p {
+    font-size: 13px;
+    color: #FFFFFF;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.split-img {
+    width: 50%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.split-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s;
+}
+.grid-card:hover .split-img img {
+    transform: scale(1.02);
+}
+
+/* Solid Red Card */
+.red-card {
+    background-color: var(--segro-red);
+    border-color: var(--segro-red);
+}
+
+.red-card .split-text {
+    background-color: var(--segro-red);
+}
+
+.red-card .arrow-circle {
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+.red-card .arrow-link:hover .arrow-circle {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: #FFFFFF;
+}
+
+/* Video play button overlay */
+.video-play-btn {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background-color: #FFFFFF;
+    color: #000000;
+    border-radius: 0;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'Barlow', sans-serif;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transition: background var(--transition-speed);
+}
+.video-play-btn:hover {
+    background-color: #f0f0f0;
+}
+
+/* Square Share Metric Card */
+.metric-card {
+    background-color: #000000;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.metric-card-value {
+    font-family: 'Barlow', sans-serif;
+    font-size: 38px;
+    font-weight: 800;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    letter-spacing: -0.5px;
+}
+
+.metric-card-label {
+    font-size: 12px;
+    color: var(--segro-text-grey);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+/* Circle Download Card */
+.circle-card-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.circle-card {
+    width: 200px;
+    height: 200px;
+    border: 1.5px solid rgba(255, 255, 255, 0.25);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 24px;
+    box-sizing: border-box;
+    background-color: #000000;
+    gap: 14px;
+    cursor: pointer;
+    transition: border-color 0.25s, transform 0.25s;
+}
+.circle-card:hover {
+    border-color: rgba(255, 255, 255, 0.6);
+    transform: scale(1.03);
+}
+
+.circle-card h4 {
+    font-size: 15px;
+    font-weight: 800;
+    font-family: 'Barlow', sans-serif;
+    margin: 0;
+    line-height: 1.35;
+    color: #FFFFFF;
+    letter-spacing: 0.2px;
+}
+
+.circle-card .arrow-circle {
+    width: 32px;
+    height: 32px;
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* ---------------------------------------------------- */
+/* Mobile Overlay Menu Styling                          */
+/* ---------------------------------------------------- */
+.mobile-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: #0C0D0E;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease-in-out;
+}
+
+.mobile-menu-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.mobile-menu-body {
+    padding: 30px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.mobile-menu-link {
+    font-family: 'Barlow', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #FFFFFF;
+    transition: color 0.2s;
+    display: block;
+}
+
+.mobile-menu-link:hover {
+    color: var(--segro-red);
+}
+
+/* Mobile Login Bar under top-header */
+.mobile-login-bar {
+    display: none;
+    justify-content: flex-end;
+    padding: 10px 20px;
+    background-color: var(--segro-dark-bg);
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+/* ---------------------------------------------------- */
+/* Mobile Sticky Footer & Popup bottom sheet drawer     */
+/* ---------------------------------------------------- */
+.mobile-interests-footer {
+    display: none; /* Hidden on desktop */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background-color: #000000;
+    border-top: 1px solid var(--segro-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px;
+    box-sizing: border-box;
+    z-index: 1501;
+    cursor: pointer;
+}
+
+.mobile-interests-drawer {
+    position: fixed;
+    bottom: 60px; /* Sits exactly above the footer bar */
+    left: 0;
+    width: 100%;
+    background-color: #000000;
+    border-top: 1px solid var(--segro-border);
+    border-radius: 16px 16px 0 0;
+    z-index: 1500;
+    transform: translateY(110%);
+    transition: transform 0.3s ease-out;
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+    box-sizing: border-box;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+}
+
+.mobile-interests-drawer.open {
+    transform: translateY(0);
+}
+
+.drawer-chevron {
+    color: #FFFFFF;
+    transition: transform 0.25s ease;
+}
+
+/* 4. White Corporate Footer */
+.footer {
+    background-color: #FFFFFF;
+    color: #121213;
+    padding: 70px 50px 40px;
+    font-family: 'Inter', sans-serif;
+    border-top: 1px solid #E2E5EB;
+}
+
+.footer-cols {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 40px;
+    max-width: 1440px;
+    margin: 0 auto 60px;
+}
+
+.footer-col h5 {
+    font-size: 12px;
+    font-weight: 800;
+    font-family: 'Barlow', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 24px 0;
+    color: #121213;
+    border-bottom: 2px solid #EBEFF3;
+    padding-bottom: 8px;
+    display: inline-block;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.footer-links a {
+    font-size: 13px;
+    color: #55555E;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+.footer-links a:hover {
+    color: var(--segro-red);
+}
+
+.footer-social-wrapper {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 30px;
+}
+
+.social-icon {
+    color: #55555E;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+}
+.social-icon:hover {
+    color: var(--segro-red);
+}
+
+.corporate-info {
+    font-size: 11px;
+    color: #777782;
+    line-height: 1.6;
+}
+
+.corporate-info strong {
+    color: #121213;
+    display: block;
+    margin-bottom: 8px;
+}
+
+/* Footer Bottom Bar */
+.footer-bottom {
+    max-width: 1440px;
+    margin: 0 auto;
+    border-top: 1px solid #EBEFF3;
+    padding-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: #777782;
+    font-weight: 500;
+}
+
+.footer-bottom-links {
+    display: flex;
+    gap: 25px;
+    align-items: center;
+}
+
+.footer-bottom-links a {
+    transition: color 0.2s;
+}
+.footer-bottom-links a:hover {
+    color: var(--segro-red);
+}
+
+.logo-dark img {
+    filter: none;
+}
+
+/* Responsive Layout Settings */
+@media (max-width: 1024px) {
+    body {
+        padding-bottom: 60px !important; /* Space for sticky interests footer */
+    }
+
+    .top-header {
+        padding: 14px 20px;
+    }
+
+    .top-header .login-pill-btn {
+        display: none; /* Login moves below in mobile_login_bar */
+    }
+
+    .mobile-menu-trigger {
+        display: block;
+    }
+
+    .sub-nav {
+        display: none; /* Hide white navigation links in mobile */
+    }
+
+    .main-layout {
+        flex-direction: column;
+        padding: 20px;
+        gap: 24px;
+    }
+
+    .sidebar {
+        display: none !important; /* Hide left sidebar in mobile */
+    }
+
+    .mobile-interests-footer {
+        display: flex !important; /* Show sticky interests bar at bottom */
+    }
+
+    .mobile-login-bar {
+        display: flex !important; /* Show under-header Login pill */
+    }
+
+    .content-grid-container {
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .grid-column-left, .grid-column-right {
+        width: 100%;
+    }
+
+    .split-card {
+        height: 220px;
+    }
+
+    .footer-cols {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 30px;
+    }
+}
+
+@media (max-width: 640px) {
+    .split-card {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .split-text {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--segro-border);
+    }
+
+    .split-img {
+        width: 100%;
+        height: 200px;
+    }
+
+    .metric-row {
+        flex-direction: column;
+        height: auto !important;
+        gap: 20px;
+    }
+
+    .footer-cols {
+        grid-template-columns: 1fr;
+    }
+
+    .footer-bottom {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .footer-bottom-links {
+        flex-direction: column;
+        gap: 12px;
+    }
+}

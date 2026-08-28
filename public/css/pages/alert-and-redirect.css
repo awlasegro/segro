@@ -1,0 +1,106 @@
+:root {
+    --accent-color: #CC171F;
+    --accent-hover: #9B0F15;
+    --bg-canvas: #f4f5f8;
+    --text-primary: #121213;
+    --text-secondary: #55555e;
+    --border-color: rgba(204, 23, 31, 0.25);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+/* Glassmorphic Modal Card */
+.modal-card {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 400px;
+    padding: 30px 24px;
+    text-align: center;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.alert-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-color: rgba(204, 23, 31, 0.15);
+    color: var(--accent-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.alert-title {
+    font-family: 'Barlow', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    color: var(--text-primary);
+}
+
+.alert-message {
+    font-size: 14.5px;
+    line-height: 1.5;
+    color: var(--text-secondary);
+}
+
+.btn-proceed {
+    display: inline-block;
+    width: 100%;
+    background-color: var(--accent-color);
+    color: #ffffff;
+    border: 1px solid var(--accent-color);
+    border-radius: 25px;
+    padding: 14px 20px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    outline: none;
+}
+
+.btn-proceed:hover {
+    background-color: var(--accent-hover);
+    color: #ffffff;
+    border-color: var(--accent-hover);
+}
+
+.btn-proceed:active {
+    transform: scale(0.98);
+}
