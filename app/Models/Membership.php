@@ -12,6 +12,6 @@ class Membership extends Model
     // Define the inverse relationship with User
     public function users()
     {
-        return $this->hasMany(User::class);
+        return $this->hasMany(User::class, 'membership_level_id');
     }
 }

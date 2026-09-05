@@ -38,13 +38,13 @@ class MembershipController extends Controller
         $request->validate([
             'membership' => 'required|string|max:255',
             'order_limit' => 'required|integer',
-            'commision' => 'required|numeric',
+            'commission' => 'required|numeric',
         ]);
 
         $membershipLevel = new Membership();
         $membershipLevel->level_name = $request->input('membership');
         $membershipLevel->order_limit = $request->input('order_limit');
-        $membershipLevel->commission = $request->input('commision');
+        $membershipLevel->commission = $request->input('commission');
         $membershipLevel->save();
 
         return redirect('memberships')->with('success', 'Membership level created successfully.');
@@ -71,13 +71,13 @@ class MembershipController extends Controller
         $request->validate([
             'membership' => 'required|string|max:255',
             'order_limit' => 'required|integer',
-            'commision' => 'required|numeric',
+            'commission' => 'required|numeric',
         ]);
 
         $membership = Membership::findOrFail($id);
         $membership->level_name = $request->input('membership');
         $membership->order_limit = $request->input('order_limit');
-        $membership->commission = $request->input('commision');
+        $membership->commission = $request->input('commission');
         $membership->save();
 
         return redirect('memberships')->with('success', 'Membership level updated successfully.');

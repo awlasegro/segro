@@ -6,10 +6,11 @@ use App\Models\Funds;
 use App\Models\Members;
 use App\Models\Membership;
 use App\Models\OrderList;
+use App\Models\OrderSetting;
 use App\Models\Orders;
-use App\Models\ReferenceCodes;
 use App\Models\SelectedOrder;
 use App\Models\User;
+use App\Models\UserVallet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -128,11 +129,6 @@ class MembersController extends Controller
             // Calculate available funds based on user's membership level
             $availableFunds = $user->membershipLevel->order_limit - $user->orders()->where('status', 'active')->sum('total_amount');
 
-            // The reference code column here is only ever populated if this
-            // user self-registered through the public link with an
-            // admin-issued code — admin-added users never have one.
-            $registeredWithCode = ReferenceCodes::where('used_by_user_id', $user->id)->value('code');
-
             return [
                 'user' => $user,
                 'membership_level' => $user->membershipLevel,
@@ -142,12 +138,60 @@ class MembersController extends Controller
                 'total_funds' => $totalFunds,
                 'daily_commission' => $dailyCommission,
                 'available_funds' => $availableFunds,
-                'registered_with_code' => $registeredWithCode,
+                'reference_code' => $user->reference_code,
+                'parent_name' => $user->parent ? $user->parent->name : 'N/A',
             ];
         });
 
         // Pass the paginated users and their data to the view
         return view('admin.index', ['users' => $userData, 'pagination' => $users]);
+    }
+
+    /**
+     * Full profile view for a single member — every detail an admin might
+     * need in one place, instead of hopping between the separate wallet /
+     * recharge-history / edit screens.
+     */
+    public function viewMember($id)
+    {
+        $user = User::with(['membershipLevel', 'parent'])->findOrFail($id);
+
+        // Financials — same formula used everywhere else in the app
+        // (deposit + commission - withdrawal, 'active' status only).
+        $totalDeposits = $user->funds()->where('type', 'deposit')->where('status', 'active')->sum('amount');
+        $totalWithdrawals = $user->funds()->where('type', 'withdrawal')->where('status', 'active')->sum('amount');
+        $totalCommission = $user->funds()->where('type', 'commission')->where('status', 'active')->sum('amount');
+        $totalFunds = $totalDeposits + $totalCommission - $totalWithdrawals;
+
+        $pendingDeposits = $user->funds()->where('type', 'deposit')->where('status', 'pending')->sum('amount');
+        $pendingWithdrawals = $user->funds()->where('type', 'withdrawal')->where('status', 'pending')->sum('amount');
+
+        $fundsHistory = $user->funds()->orderBy('created_at', 'desc')->take(25)->get();
+
+        // Orders
+        $ordersCount = $user->orders()->count();
+        $completedOrdersCount = $user->orders()->where('type', 'Complete')->count();
+        $incompleteOrdersCount = $user->orders()->where('type', 'Incomplete')->count();
+        $ordersHistory = $user->orders()->with('orderList')->orderBy('created_at', 'desc')->take(25)->get();
+
+        // Wallet address on file (for withdrawals)
+        $wallet = UserVallet::where('user_id', $user->id)->first();
+
+        return view('admin.member-profile', compact(
+            'user',
+            'totalDeposits',
+            'totalWithdrawals',
+            'totalCommission',
+            'totalFunds',
+            'pendingDeposits',
+            'pendingWithdrawals',
+            'fundsHistory',
+            'ordersCount',
+            'completedOrdersCount',
+            'incompleteOrdersCount',
+            'ordersHistory',
+            'wallet',
+        ));
     }
 
     public function dashboard()
@@ -157,9 +201,35 @@ class MembersController extends Controller
         $todaysOrders = Orders::whereDate('created_at', today())->count();
         $todaysDeposits = Funds::whereDate('created_at', today())
             ->where('type', 'deposit')
+            ->where('status', 'active')
             ->sum('amount');
-        $todaysWithdrawals = Funds::where('type', 'withdrawal')
+        $todaysWithdrawals = Funds::whereDate('created_at', today())
+            ->where('type', 'withdrawal')
+            ->where('status', 'active')
             ->sum('amount');
+
+        // All-time member counts
+        $totalMembers = User::count();
+        $activeMembers = User::where('status', 'active')->count();
+        $deactiveMembers = User::where('status', 'deactive')->count();
+
+        // All-time order counts
+        $totalOrders = Orders::count();
+        $completedOrders = Orders::where('type', 'Complete')->count();
+        $pendingOrders = Orders::where('type', 'Incomplete')->count();
+
+        // All-time ledger totals — 'active' status only, matching the balance
+        // formula used everywhere else in the app (deposit + commission - withdrawal).
+        $totalDeposits = Funds::where('type', 'deposit')->where('status', 'active')->sum('amount');
+        $totalWithdrawals = Funds::where('type', 'withdrawal')->where('status', 'active')->sum('amount');
+        $totalCommission = Funds::where('type', 'commission')->where('status', 'active')->sum('amount');
+
+        // Requests still awaiting admin approval/rejection
+        $pendingDeposits = Funds::where('type', 'deposit')->where('status', 'pending')->count();
+        $pendingWithdrawals = Funds::where('type', 'withdrawal')->where('status', 'pending')->count();
+
+        // Membership level breakdown
+        $membershipBreakdown = Membership::withCount('users')->orderBy('id')->get();
 
         // Retrieve the latest 10 users
         $latestUsers = User::orderBy('created_at', 'desc')->take(10)->get();
@@ -170,6 +240,18 @@ class MembersController extends Controller
             'todaysOrders' => $todaysOrders,
             'todaysDeposits' => $todaysDeposits,
             'todaysWithdrawals' => $todaysWithdrawals,
+            'totalMembers' => $totalMembers,
+            'activeMembers' => $activeMembers,
+            'deactiveMembers' => $deactiveMembers,
+            'totalOrders' => $totalOrders,
+            'completedOrders' => $completedOrders,
+            'pendingOrders' => $pendingOrders,
+            'totalDeposits' => $totalDeposits,
+            'totalWithdrawals' => $totalWithdrawals,
+            'totalCommission' => $totalCommission,
+            'pendingDeposits' => $pendingDeposits,
+            'pendingWithdrawals' => $pendingWithdrawals,
+            'membershipBreakdown' => $membershipBreakdown,
             'latestUsers' => $latestUsers,
         ]);
     }
@@ -186,8 +268,9 @@ class MembersController extends Controller
     public function create()
     {
         $users = User::all();
+        $memberships = Membership::all();
 
-        return view('admin.add-member', compact('users'));
+        return view('admin.add-member', compact('users', 'memberships'));
     }
 
     /**
@@ -203,8 +286,17 @@ class MembersController extends Controller
     {
         $request->validate([
             'username' => 'required|unique:users,username|max:255',
-            'password' => 'required',
+            'email' => 'required|email|unique:users,email',
+            'phone' => 'required|string|max:255|unique:users,phone',
+            'password' => 'required|confirmed',
             'vallet_password' => 'required',
+            'parentUser' => 'required|exists:users,id',
+            'credibility' => 'required|numeric|min:0|max:100',
+            'op_balance' => 'required|numeric|min:0',
+            'min_withdraw' => 'required|numeric|min:0',
+            'max_withdraw' => 'required|numeric|min:0|gte:min_withdraw',
+            'memLevel' => 'required|exists:memberships,id',
+            'userType' => 'required|in:0,1,2',
         ]);
 
         $username = $request->input('username');
@@ -212,37 +304,30 @@ class MembersController extends Controller
         $members = new User();
         $members->name = $username;
         $members->username = $username;
-        // The users table requires a unique-looking, non-null email even though
-        // nothing in the app currently reads it (login is by username, not email).
-        $members->email = Str::slug($username, '.') . '_' . Str::lower(Str::random(6)) . '@placeholder.local';
-        // Phone is no longer collected on this form, but the column is still
-        // NOT NULL and unique — auto-generate a placeholder instead.
-        $members->phone = 'N/A-' . strtoupper(Str::random(8));
-        $members->password = Hash::make($request->input('password')); // Hash the password
-        $members->vallet_password = Hash::make($request->input('vallet_password')); // Hash the password
+        $members->email = $request->input('email');
+        $members->phone = $request->input('phone');
+        $members->password = Hash::make($request->input('password'));
+        $members->vallet_password = Hash::make($request->input('vallet_password'));
         // NOT NULL with no default on this table — must be set explicitly.
         $members->remember_token = Str::random(10);
 
-        // The parent/referral system has been retired — admin-added members
-        // don't go through the reference-code gate at all. reference_code and
-        // parent_id are still NOT NULL columns, so they're set to inert
-        // placeholder values rather than actually being used for anything.
         $members->reference_code = strtoupper(Str::random(6));
-        $members->parent_id = 0;
+        $members->parent_id = $request->input('parentUser');
         $members->user_type = $request->input('userType') ?? 0;
         $members->status = 'active';
+        $members->wallet_status = 'deactive';
 
-        // Default starting values — adjustable afterward on the Edit User screen.
-        $members->membership_level_id = 1; // Silver
-        $members->credibility = 100;
-        $members->min_withdraw = 50;
-        $members->max_withdraw = 3000;
+        $members->membership_level_id = $request->input('memLevel');
+        $members->credibility = $request->input('credibility');
+        $members->min_withdraw = $request->input('min_withdraw');
+        $members->max_withdraw = $request->input('max_withdraw');
         $members->save();
 
         $opening_balance = new Funds();
         $opening_balance->user_id = $members->id;
-        $opening_balance->amount = 0; // Default opening balance
+        $opening_balance->amount = $request->input('op_balance');
         $opening_balance->type = 'deposit';
+        $opening_balance->status = 'active';
         $opening_balance->save();
 
         return redirect('/administration')->with('add_success', 'Your user has been saved successfully.');
@@ -267,11 +352,10 @@ class MembersController extends Controller
         $memberships = Membership::all();
         $user = User::findOrFail($id);
 
-        // Only populated if this user self-registered through the public
-        // link with an admin-issued code — admin-added users never have one.
-        $registeredWithCode = ReferenceCodes::where('used_by_user_id', $user->id)->value('code');
+        // For the administrative parent-account dropdown.
+        $users = User::where('id', '!=', $user->id)->get();
 
-        return view('admin.update-user-data', compact('memberships', 'user', 'registeredWithCode'));
+        return view('admin.update-user-data', compact('memberships', 'user', 'users'));
     }
 
     /**
@@ -294,15 +378,17 @@ class MembersController extends Controller
             'max_withdrawal' => 'required|numeric',
             'user_status' => 'required|in:active,deactive',
             'wallet_status' => 'required|in:active,deactive',
+            'parentUser' => 'nullable|exists:users,id|not_in:'.$id,
         ]);
 
-        // Update user data. parent_id and reference_code are no longer
-        // editable here — the referral/parent system has been retired.
+        // Update account data. parent_id is retained only for the existing
+        // administrative hierarchy; it does not generate commission.
         $user->name = $request->input('username');
         $user->membership_level_id = $request->input('memLevel');
         $user->credibility = $request->input('credibility');
         $user->status = $request->input('user_status');
         $user->wallet_status = $request->input('wallet_status');
+        $user->parent_id = $request->input('parentUser') ?: 0;
 
         // Update passwords if provided
         if ($request->filled('password')) {
@@ -355,7 +441,6 @@ class MembersController extends Controller
                                             ->orderBy('order_after', 'asc')
                                             ->get();
 
-        // Retrieve the user
         $user = User::findOrFail($id);
 
         return view('admin.setup-orders', compact('selected_order_list', 'user'));
@@ -363,10 +448,8 @@ class MembersController extends Controller
 
     public function update_orders(Request $request, $id)
     {
-        // Get all selected orders from the form
         $selected_order_ids = $request->input('selected_orders', []);
 
-        // Delete any unchecked orders from the selected_orders table
         SelectedOrder::where('user_id', $id)
             ->whereNotIn('id', $selected_order_ids)
             ->delete();
@@ -376,20 +459,16 @@ class MembersController extends Controller
 
     public function saveSelectedOrders(Request $request, $user)
     {
-        // Validate the request
         $request->validate([
             'selected_orders' => 'required|array',
-            'order_after' => 'required|integer', // Validate the order_after field
+            'order_after' => 'required|integer',
         ]);
 
-        // Retrieve the selected orders
-        $selectedOrderIds = $request->input('selected_orders');
         $orderAfter = $request->input('order_after');
+        $selectedOrderIds = $request->input('selected_orders');
 
-        // Clear existing orders for the user if needed
         SelectedOrder::where('user_id', $user)->delete();
 
-        // Save selected orders in the order they were selected
         foreach ($selectedOrderIds as $orderId) {
             SelectedOrder::create([
                 'user_id' => $user,
@@ -437,7 +516,7 @@ class MembersController extends Controller
             if ($user->status === 'active') {
                 // Check if the user is an admin
                 if ($user->user_type == 1 || $user->user_type == 2) {
-                    return redirect()->intended('administration');
+                    return redirect()->intended(route('admin.dashboard'));
                 }
 
                 Auth::logout();
@@ -516,6 +595,9 @@ class MembersController extends Controller
         $selectedOrders = SelectedOrder::where('user_id', $user->id)->get();
         $created = 0;
 
+        // Admin-configurable commission rate for orders matched to a curated SelectedOrder slot
+        $selectedOrderCommissionRate = OrderSetting::current()->selected_order_commission_rate / 100;
+
         for ($position = $todaysCompletedOrdersCount; $position < $todaysCompletedOrdersCount + $remaining; ++$position) {
             $matched = $selectedOrders->where('order_after', $position);
 
@@ -524,7 +606,7 @@ class MembersController extends Controller
                     $orderListIds = explode(',', $selectedOrder->order_list_id);
 
                     foreach (OrderList::whereIn('id', $orderListIds)->get() as $orderListItem) {
-                        $this->createQueuedOrder($user, $orderListItem, $orderListItem->price * 0.10);
+                        $this->createQueuedOrder($user, $orderListItem, $orderListItem->price * $selectedOrderCommissionRate);
                         ++$created;
                     }
                 }
@@ -592,9 +674,9 @@ class MembersController extends Controller
     /**
      * Inline-edit a single queued order's price/commission. Only orders that
      * are still pending (Incomplete) may be edited — once an order is
-     * completed, its commission has already been paid out into the funds
-     * ledger (and possibly the referrer's), so editing it afterward would
-     * silently desync the order record from money that has already moved.
+    * completed, its commission has already been paid out into the funds
+    * ledger, so editing it afterward would silently desync the order record
+    * from money that has already moved.
      */
     public function updateQueuedOrder(Request $request, $id)
     {

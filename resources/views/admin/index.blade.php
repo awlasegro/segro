@@ -99,12 +99,13 @@
                                     <tr>
                                         <th>ID</th>
                                         <th>Username</th>
+                                        <th>Parent</th>
                                         <th>Balance</th>
                                         <th>Available</th>
                                         <th>Total Orders</th>
                                         <th>Reward</th>
                                         <th>%</th>
-                                        <th>Referral Code</th>
+                                        <th>Personal Reference Code</th>
                                         <th>Membership</th>
                                         <th>Status</th>
                                         <th>W Status</th>
@@ -117,13 +118,14 @@
                                     @foreach ($users as $item)
                                         <tr>
                                             <td>{{ $item['user']->id }}</td>
-                                            <td>{{ $item['user']->name }}</td>
+                                            <td><a href="{{ route('member.show', $item['user']->id) }}">{{ $item['user']->name }}</a></td>
+                                            <td>{{ $item['parent_name'] }}</td>
                                             <td>{{ number_format($item['total_funds'], 2) }}</td>
                                             <td>{{ $item['total_order_limit'] }}</td>
                                             <td>{{ $item['processed_orders_count'] }}</td>
                                             <td>{{ number_format($item['daily_commission'], 2) }}</td>
                                             <td>{{ $item['user']->credibility }}</td>
-                                            <td>{{ $item['registered_with_code'] ?? 'N/A' }}</td>
+                                            <td>{{ $item['reference_code'] ?? 'N/A' }}</td>
                                             <td>{{ $item['membership_level']->level_name }}</td>
                                             <td><span class="badge badge-{{ $item['user']->status == 'active' ? 'success' : 'danger' }}">
                                                 {{ ucfirst($item['user']->status) }}
@@ -152,6 +154,7 @@
                                                         More Actions
                                                     </button>
                                                     <div class="dropdown-menu">
+                                                        <a class="dropdown-item" href="{{ route('member.show', $item['user']->id) }}">View Profile</a>
                                                         <a class="dropdown-item" href="{{ URL('/update-user', $item['user']->id) }}">Edit</a>
                                                         <a class="dropdown-item" href="{{ URL('/vallet-information', $item['user']->id) }}">Wallet Information</a>
                                                         <a class="dropdown-item" href="{{ URL('/user-recharge-history', $item['user']->id) }}">Recharge History</a>
@@ -166,12 +169,13 @@
                                     <tr>
                                         <th>ID</th>
                                         <th>Username</th>
+                                        <th>Parent</th>
                                         <th>Balance</th>
                                         <th>Available</th>
                                         <th>Total Orders</th>
                                         <th>Reward</th>
                                         <th>%</th>
-                                        <th>Referral Code</th>
+                                        <th>Personal Reference Code</th>
                                         <th>Membership</th>
                                         <th>Status</th>
                                         <th>W Status</th>

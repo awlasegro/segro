@@ -37,7 +37,7 @@
                 <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Reference Code</th>
+                  <th>Registration Code</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
@@ -70,7 +70,7 @@
                 <tfoot>
                 <tr>
                   <th>ID</th>
-                  <th>Reference Code</th>
+                  <th>Registration Code</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>

@@ -61,9 +61,9 @@
               <!-- /.form group -->
                <!--Short Description -->
                <div class="form-group">
-                <label>Commision</label>
+                <label>Commission</label>
                   <div class="input-group date" id="reservationdatetime" data-target-input="nearest">
-                      <input type="text" name="commision" placeholder="Enter Commision" class="form-control"/>
+                      <input type="text" name="commission" placeholder="Enter Commission" class="form-control"/>
                   </div>
               </div>
               <!-- /.form group -->

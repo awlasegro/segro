@@ -79,7 +79,7 @@
 
                 <div class="tier-info {{ $isUnlocked ? 'success' : '' }}">
                     @if($isUnlocked)
-                        <span>Active Level ({{ $item->commision }}% commission rate)</span>
+                            <span>Active Level ({{ $item->commission }}% commission rate)</span>
                     @else
                         <span>Requires upgrade from admin panel.</span>
                     @endif

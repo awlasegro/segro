@@ -53,12 +53,18 @@
 
                                     </div>
                                 </div>
-                                <!-- Reference code (display-only — nothing here is editable) -->
+                                <!-- Parent account for admin hierarchy -->
                                 <div class="form-group">
-                                    <label>Reference Code</label>
+                                    <label>Parent Account</label>
                                     <div class="input-group">
-                                        <input type="text" value="{{ $registeredWithCode ?? 'N/A (added by admin)' }}"
-                                            class="form-control" disabled />
+                                        <select name="parentUser" class="form-control select2bs4" style="width: 100%;">
+                                            <option value="">None</option>
+                                            @foreach ($users as $existingUser)
+                                                <option value="{{ $existingUser->id }}" {{ $user->parent_id == $existingUser->id ? 'selected' : '' }}>
+                                                    {{ $existingUser->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
                                     </div>
                                 </div>
                                 <!--Credibility -->

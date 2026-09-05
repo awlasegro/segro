@@ -37,7 +37,7 @@
                   <th>ID</th>
                   <th>Membership Level</th>
                   <th>Order Limit</th>
-                  <th>Commision</th>
+                  <th>Commission</th>
                   <th>Actions</th>
                 </tr>
                 </thead>
@@ -63,7 +63,7 @@
                   <th>ID</th>
                   <th>Membership Level</th>
                   <th>Order Limit</th>
-                  <th>Commision</th>
+                  <th>Commission</th>
                   <th>Actions</th>
                 </tr>
                 </tfoot>

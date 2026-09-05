@@ -64,7 +64,7 @@
                <div class="form-group">
                 <label>Commission (%)</label>
                   <div class="input-group">
-                      <input type="text" name="commision" value="{{ $membership->commission }}" placeholder="Enter Commission" class="form-control" required/>
+                      <input type="text" name="commission" value="{{ $membership->commission }}" placeholder="Enter Commission" class="form-control" required/>
                   </div>
               </div>
               <!-- /.form group -->

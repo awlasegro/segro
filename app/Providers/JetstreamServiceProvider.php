@@ -29,7 +29,11 @@ class JetstreamServiceProvider extends ServiceProvider
 
         Jetstream::deleteUsersUsing(DeleteUser::class);
         Fortify::authenticateUsing(function (Request $request) {
-            $user = User::where('name', $request->username)->first();
+            // Login is by the stable `username` column (matches
+            // fortify.username config and the login form's field name) —
+            // not `name`, which is just the display name and can be
+            // changed independently via MembersController::update().
+            $user = User::where('username', $request->username)->first();
 
             if ($user &&
                 Hash::check($request->password, $user->password)) {

@@ -73,6 +73,27 @@
               </div>
             </form>
           </div>
+
+          <div class="card card-primary">
+            <div class="card-header">
+              <h3 class="card-title">Order Settings</h3>
+            </div>
+
+            <form action="{{ route('admin.order.settings.update') }}" method="POST">
+              @csrf
+              <div class="card-body">
+                <div class="form-group">
+                  <label for="selected_order_commission_rate">Selected Order Commission Rate (%)</label>
+                  <input type="number" step="0.01" min="0" max="100" name="selected_order_commission_rate" class="form-control" id="selected_order_commission_rate" value="{{ old('selected_order_commission_rate', $orderSettings->selected_order_commission_rate) }}" required>
+                  <small class="text-muted">Applied to orders matched to an admin-curated "selected order" slot (order-queue picks), instead of the user's membership commission rate.</small>
+                </div>
+              </div>
+
+              <div class="card-footer">
+                <button type="submit" class="btn btn-primary">Save Order Settings</button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>

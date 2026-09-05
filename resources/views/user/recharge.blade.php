@@ -47,6 +47,18 @@
                 <span style="color: #ef4444;">{{ session('error') }}</span>
             </div>
         @endif
+        @if ($errors->any())
+            <div class="alert alert-error" style="margin-bottom: 20px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <div>
+                    @foreach ($errors->all() as $error)
+                        <p style="margin: 0; color: #ef4444;">{{ $error }}</p>
+                    @endforeach
+                </div>
+            </div>
+        @endif
         @if (($overpricedAmount ?? 0) > 0)
             <div class="alert alert-error" style="margin-bottom: 20px;">
                 <span>You're short by <strong>${{ number_format($overpricedAmount, 2) }}</strong> to resume your orders. Please recharge to continue.</span>
@@ -92,7 +104,7 @@
 
                 <div class="form-group" style="margin-bottom: 25px;">
                     <label for="amount">Deposit amount ({{ $wallet->wallet_type }})</label>
-                    <input type="number" id="amount" name="amount" placeholder="0.00" min="1" required>
+                    <input type="number" id="amount" name="amount" placeholder="0.00" min="1" value="{{ old('amount') }}" required>
                 </div>
 
                 <button type="button" onclick="generateRecharge()" class="btn btn-primary">Generate deposit</button>

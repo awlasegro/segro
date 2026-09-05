@@ -92,7 +92,7 @@
               <input type="hidden" name="id" value="{{ $walletInformation->id }}">
               <!-- form Buttons -->
               <div class="form-group">
-                        <input type="reset" class="btn btn-dark" value="Back to Users"/>
+                        <a href="{{ route('member.show', $user->id) }}" class="btn btn-dark">Back to Member</a>
                         <input type="submit" class="btn btn-danger" value="Update Information">
                 </div>
                  <!-- /.form buttonss -->

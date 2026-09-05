@@ -83,42 +83,46 @@
       <li class="nav-item dropdown">
         <a class="nav-link" data-toggle="dropdown" href="#">
           <i class="far fa-comments"></i>
-          <span class="badge badge-danger navbar-badge">3</span>
+          @if($navChatUnreadTotal > 0)
+            <span class="badge badge-danger navbar-badge">{{ $navChatUnreadTotal }}</span>
+          @endif
         </a>
         <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-          <a href="#" class="dropdown-item">
-            <!-- Message Start -->
-            <div class="media">
-              <img src="{{ asset('dist/img/user1-128x128.jpg') }}" alt="User Avatar" class="img-size-50 mr-3 img-circle">
-              <div class="media-body">
-                <h3 class="dropdown-item-title">
-                  Brad Diesel
-                  <span class="float-right text-sm text-danger"><i class="fas fa-star"></i></span>
-                </h3>
-                <p class="text-sm">Call me whenever you can...</p>
-                <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 4 Hours Ago</p>
+          @forelse($navChatConversations as $conversation)
+            <a href="{{ route('admin.chats.show', $conversation->id) }}" class="dropdown-item">
+              <!-- Message Start -->
+              <div class="media">
+                <img src="{{ $conversation->profile_photo_url }}" alt="User Avatar" class="img-size-50 mr-3 img-circle">
+                <div class="media-body">
+                  <h3 class="dropdown-item-title">
+                    {{ $conversation->name }}
+                    @if($conversation->unread_count > 0)
+                      <span class="float-right text-sm text-danger"><i class="fas fa-star"></i></span>
+                    @endif
+                  </h3>
+                  <p class="text-sm">
+                    @if(optional($conversation->latest_message)->message)
+                      {{ \Illuminate\Support\Str::limit($conversation->latest_message->message, 40) }}
+                    @elseif(optional($conversation->latest_message)->image)
+                      Photo attachment
+                    @else
+                      No messages yet
+                    @endif
+                  </p>
+                  <p class="text-sm text-muted">
+                    <i class="far fa-clock mr-1"></i>
+                    {{ optional(optional($conversation->latest_message)->created_at)->diffForHumans() }}
+                  </p>
+                </div>
               </div>
-            </div>
-            <!-- Message End -->
-          </a>
-          <div class="dropdown-divider"></div>
-          <a href="#" class="dropdown-item">
-            <!-- Message Start -->
-            <div class="media">
-              <img src="{{ asset('dist/img/user8-128x128.jpg') }}" alt="User Avatar" class="img-size-50 img-circle mr-3">
-              <div class="media-body">
-                <h3 class="dropdown-item-title">
-                  John Pierce
-                  <span class="float-right text-sm text-muted"><i class="fas fa-star"></i></span>
-                </h3>
-                <p class="text-sm">I got your message bro</p>
-                <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 4 Hours Ago</p>
-              </div>
-            </div>
-            <!-- Message End -->
-          </a>
-          <div class="dropdown-divider"></div>
-          <a href="#" class="dropdown-item dropdown-footer">See All Messages</a>
+              <!-- Message End -->
+            </a>
+            <div class="dropdown-divider"></div>
+          @empty
+            <span class="dropdown-item text-muted">No conversations yet</span>
+            <div class="dropdown-divider"></div>
+          @endforelse
+          <a href="{{ route('admin.chats.index') }}" class="dropdown-item dropdown-footer">See All Messages</a>
         </div>
       </li>
 
@@ -126,27 +130,28 @@
       <li class="nav-item dropdown">
         <a class="nav-link" data-toggle="dropdown" href="#">
           <i class="far fa-bell"></i>
-          <span class="badge badge-warning navbar-badge">15</span>
+          @if($navNotificationsTotal > 0)
+            <span class="badge badge-warning navbar-badge">{{ $navNotificationsTotal }}</span>
+          @endif
         </a>
         <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-          <span class="dropdown-header">15 Notifications</span>
+          <span class="dropdown-header">{{ $navNotificationsTotal }} Notification{{ $navNotificationsTotal == 1 ? '' : 's' }}</span>
+          @forelse($navNotifications as $request)
+            <div class="dropdown-divider"></div>
+            <a href="{{ $request->type == 'deposit' ? route('admin.deposit.requests') : route('admin.redemption.requests') }}" class="dropdown-item">
+              @if($request->type == 'deposit')
+                <i class="fas fa-coins mr-2"></i> Deposit request &mdash; ${{ number_format($request->amount, 2) }} from {{ optional($request->user)->name ?? 'Unknown' }}
+              @else
+                <i class="fas fa-hand-holding-usd mr-2"></i> Withdrawal request &mdash; ${{ number_format($request->amount, 2) }} from {{ optional($request->user)->name ?? 'Unknown' }}
+              @endif
+              <span class="float-right text-muted text-sm">{{ $request->created_at->diffForHumans(null, true) }}</span>
+            </a>
+          @empty
+            <div class="dropdown-divider"></div>
+            <span class="dropdown-item text-muted">No pending requests</span>
+          @endforelse
           <div class="dropdown-divider"></div>
-          <a href="#" class="dropdown-item">
-            <i class="fas fa-envelope mr-2"></i> 4 new messages
-            <span class="float-right text-muted text-sm">3 mins</span>
-          </a>
-          <div class="dropdown-divider"></div>
-          <a href="#" class="dropdown-item">
-            <i class="fas fa-users mr-2"></i> 8 friend requests
-            <span class="float-right text-muted text-sm">12 hours</span>
-          </a>
-          <div class="dropdown-divider"></div>
-          <a href="#" class="dropdown-item">
-            <i class="fas fa-file mr-2"></i> 3 new reports
-            <span class="float-right text-muted text-sm">2 days</span>
-          </a>
-          <div class="dropdown-divider"></div>
-          <a href="#" class="dropdown-item dropdown-footer">See All Notifications</a>
+          <a href="{{ route('admin.deposit.requests') }}" class="dropdown-item dropdown-footer">See All Requests</a>
         </div>
       </li>
 
@@ -200,6 +205,14 @@
           <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
 
+          <li class="nav-item">
+            <a href="{{ route('admin.dashboard') }}" class="nav-link">
+              <i class="nav-icon fas fa-tachometer-alt"></i>
+              <p>
+                Dashboard
+              </p>
+            </a>
+          </li>
           <li class="nav-item">
             <a href="/administration" class="nav-link">
               <i class="nav-icon fas fa-users-cog"></i>
@@ -272,14 +285,6 @@
               </p>
             </a>
           </li>
-          <li class="nav-item">
-            <a href="{{ route('reference-codes.index') }}" class="nav-link">
-              <i class="nav-icon fas fa-key"></i>
-              <p>
-                Reference Codes
-              </p>
-            </a>
-          </li>
           @endif
           <li class="nav-item">
             <a href="{{ route('admin.logout') }}" class="nav-link">
@@ -298,27 +303,7 @@
 
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
-    <!-- Content Header (Page header) -->
-    <div class="content-header">
-      <div class="container-fluid">
-        <div class="row mb-2">
-          <div class="col-sm-6">
-            <h1 class="m-0">@yield('page-title')</h1>
-          </div>
-          <div class="col-sm-6">
-            @yield('breadcrumb')
-          </div>
-        </div>
-      </div><!-- /.container-fluid -->
-    </div>
-
-    <!-- Main content -->
-    <div class="content">
-      <div class="container-fluid">
-        @yield('content')
-      </div><!-- /.container-fluid -->
-    </div>
-    <!-- /.content -->
+    @yield('content')
   </div>
   <!-- /.content-wrapper -->
 

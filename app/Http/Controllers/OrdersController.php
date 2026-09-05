@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Orders;
 use App\Models\OrderList;
+use App\Models\OrderSetting;
 use App\Models\SelectedOrder;
 use App\Models\Funds;
+use App\Models\User;
 use App\Http\Requests\StoreOrdersRequest;
 use App\Http\Requests\UpdateOrdersRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -113,6 +116,9 @@ class OrdersController extends Controller
         // Fetch all selected orders for the user
         $selectedOrders = SelectedOrder::where('user_id', $user->id)->get();
 
+        // Admin-configurable commission rate for orders matched to a curated SelectedOrder slot
+        $selectedOrderCommissionRate = OrderSetting::current()->selected_order_commission_rate / 100;
+
         $orderData = [];
 
         foreach ($selectedOrders as $selectedOrder) {
@@ -123,8 +129,7 @@ class OrdersController extends Controller
 
                 foreach ($orders as $order) {
                     $orderPrice = $order->price;
-                    $commissionRate = 0.10; // Fixed 10% commission for selected orders
-                    $commission = $orderPrice * $commissionRate;
+                    $commission = $orderPrice * $selectedOrderCommissionRate;
                     $totalAmount = $orderPrice + $commission;
 
                     $overpricedAmount = max(0, $orderPrice - $funds);
@@ -296,6 +301,9 @@ class OrdersController extends Controller
         // Fetch the user's membership details
         $membership = auth()->user()->membershipLevel;
 
+        // Admin-configurable commission rate for orders matched to a curated SelectedOrder slot
+        $selectedOrderCommissionRate = OrderSetting::current()->selected_order_commission_rate / 100;
+
         // Fetch the selected orders for the user, if any
         $selectedOrders = SelectedOrder::where('user_id', $userId)->get();
         $selectedOrderIds = $selectedOrders->pluck('order_list_id')->flatten()->toArray();
@@ -314,7 +322,7 @@ class OrdersController extends Controller
         if ($oneIncompleteOrder) {
             $oneIncompleteOrderPrice = $oneIncompleteOrder->price ?? $oneIncompleteOrder->orderList->price;
             $oneIncompleteOrderCommission = $oneIncompleteOrder->commission ?? (
-                $oneIncompleteOrderPrice * (in_array($oneIncompleteOrder->orderList->id, $selectedOrderIds) ? 0.10 : ($membership->commission / 100))
+                $oneIncompleteOrderPrice * (in_array($oneIncompleteOrder->orderList->id, $selectedOrderIds) ? $selectedOrderCommissionRate : ($membership->commission / 100))
             );
         }
 
@@ -324,10 +332,10 @@ class OrdersController extends Controller
                                 ->where('status', 'active')
                                 ->orderBy('id', 'desc')  // Order by descending 'id'
                                 ->get()
-                                ->map(function ($order) use ($selectedOrderIds, $membership) {
+                                ->map(function ($order) use ($selectedOrderIds, $membership, $selectedOrderCommissionRate) {
             $orderPrice = $order->price ?? $order->orderList->price;
             $commission = $order->commission ?? (
-                $orderPrice * (in_array($order->orderList->id, $selectedOrderIds) ? 0.10 : ($membership->commission / 100))
+                $orderPrice * (in_array($order->orderList->id, $selectedOrderIds) ? $selectedOrderCommissionRate : ($membership->commission / 100))
             );
             $totalAmount = $orderPrice + $commission;
 
@@ -347,10 +355,10 @@ class OrdersController extends Controller
                             ->where('type', 'Incomplete')
                             ->where('status', 'active')
                             ->get()
-                            ->map(function ($order) use ($selectedOrderIds, $membership) {
+                            ->map(function ($order) use ($selectedOrderIds, $membership, $selectedOrderCommissionRate) {
             $orderPrice = $order->price ?? $order->orderList->price;
             $commission = $order->commission ?? (
-                $orderPrice * (in_array($order->orderList->id, $selectedOrderIds) ? 0.10 : ($membership->commission / 100))
+                $orderPrice * (in_array($order->orderList->id, $selectedOrderIds) ? $selectedOrderCommissionRate : ($membership->commission / 100))
             );
             $totalAmount = $orderPrice + $commission;
 
@@ -397,6 +405,13 @@ class OrdersController extends Controller
                    ->first();
 
     if ($order) {
+        $result = DB::transaction(function () use ($order, $user, $request) {
+            $order = Orders::whereKey($order->id)->lockForUpdate()->first();
+
+            if (!$order || $order->type !== 'Incomplete') {
+                return false;
+            }
+
         // Update the order status to Complete
         $order->type = 'Complete';
         $order->save();
@@ -409,11 +424,40 @@ class OrdersController extends Controller
         $user->funds()->create([
             'amount' => $commission,
             'type' => 'commission',
+            'status' => 'active',
+            'commission_type' => 'order',
+            'source_user_id' => $user->id,
+            'order_id' => $order->id,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        return redirect()->route('data-optimization')->with('order_success_message', 'Order completed successfully.');
+        // The user's reference code identifies the parent account.
+        if ($user->parent_id) {
+            $parentUser = User::whereKey($user->parent_id)->where('status', 'active')->first();
+
+            if ($parentUser) {
+                $parentUser->funds()->create([
+                    'amount' => $commission * 0.30,
+                    'type' => 'commission',
+                    'status' => 'active',
+                    'commission_type' => 'referral',
+                    'source_user_id' => $user->id,
+                    'referrer_user_id' => $parentUser->id,
+                    'order_id' => $order->id,
+                    'description' => 'Reference code commission from ' . $user->name,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
+
+            return true;
+        });
+
+        if ($result) {
+            return redirect()->route('data-optimization')->with('order_success_message', 'Order completed successfully.');
+        }
     }
 
     return redirect()->back()->with('error', 'Order not found or already completed.');

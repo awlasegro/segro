@@ -18,8 +18,8 @@ return new class extends Migration
             // user's IP changes — used to show admins an approximate
             // "current location" (city-level, via IP geolocation) in the
             // support chat panel.
-            $table->string('last_ip_address')->nullable()->after('max_withdraw');
-            $table->string('last_location')->nullable()->after('last_ip_address');
+            $table->string('last_ip_address')->nullable();
+            $table->string('last_location')->nullable();
         });
     }
 

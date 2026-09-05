@@ -34,8 +34,12 @@
         <form method="POST" action="{{ route('user-registeration') }}">
             @csrf
             <div class="form-group">
-                <label for="full-name">Full Name</label>
-                <input type="text" id="full-name" name="name" placeholder="John Doe" required>
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Choose a username" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="you@example.com" required autocomplete="email">
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
@@ -57,7 +61,7 @@
             </div>
             <div class="form-group">
                 <label for="refrence-code">Reference Code</label>
-                <input type="text" id="refrence-code" name="refrence-code" placeholder="Enter invitation code" value="{{ old('refrence-code', request()->query('ref')) }}" required>
+                <input type="text" id="refrence-code" name="refrence-code" placeholder="Enter reference code" value="{{ old('refrence-code', request()->query('refrence-code')) }}" required>
             </div>
             <button type="submit" class="btn btn-primary" style="margin-top: 10px; margin-bottom: 20px; width: 100%;">Sign Up</button>
             <div class="text-center" style="font-size: 13px;">

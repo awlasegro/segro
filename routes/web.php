@@ -8,7 +8,6 @@ use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\OrderListController;
 use App\Http\Controllers\OrdersController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ReferenceCodesController;
 use App\Http\Controllers\UserValletController;
 use App\Http\Controllers\PlatformWalletController;
 use Illuminate\Support\Facades\Route;
@@ -31,23 +30,17 @@ Route::get('/welcome', function () {
 Route::middleware('admin')->group(function () {
     // Administration Routes
     Route::get('administration', [MembersController::class, 'index'])->name('administration');
-    Route::get('admin.dashboard', [MembersController::class, 'dashboard']);
+    Route::get('admin/dashboard', [MembersController::class, 'dashboard'])->name('admin.dashboard');
     Route::get('add-member', [MembersController::class, 'create']);
     Route::post('add-member', [MembersController::class, 'store']);
     Route::get('update-user/{id}', [MembersController::class, 'edit']);
+    Route::get('member/{id}', [MembersController::class, 'viewMember'])->name('member.show');
     Route::post('update-members/{id}', [MembersController::class, 'update'])->name('members.update');
     Route::get('reset-todays-orders/{user}', [MembersController::class, 'resetTodaysOrders'])->name('reset.todays.orders');
     Route::get('generate-orders/{id}', [MembersController::class, 'generateOrders'])->name('generate.orders');
     Route::get('order-queue/{id}', [MembersController::class, 'orderQueue'])->name('order.queue');
     Route::post('order-queue/{id}/update', [MembersController::class, 'updateQueuedOrder'])->name('order.queue.update');
     Route::post('save_selected_orders/{user}', [MembersController::class, 'saveSelectedOrders'])->name('save_selected_orders');
-    Route::get('reference-codes', [ReferenceCodesController::class, 'index'])->name('reference-codes.index');
-    Route::get('add-reference-code', [ReferenceCodesController::class, 'create']);
-    Route::post('create-reference-code', [ReferenceCodesController::class, 'store']);
-    Route::get('reference-codes/{id}/edit', [ReferenceCodesController::class, 'edit'])->name('reference-codes.edit');
-    Route::post('reference-codes/{id}/update', [ReferenceCodesController::class, 'update'])->name('reference-codes.update');
-    Route::post('reference-codes/{id}/delete', [ReferenceCodesController::class, 'destroy'])->name('reference-codes.destroy');
-    Route::post('reference-codes/generate', [ReferenceCodesController::class, 'generate'])->name('reference-codes.generate');
     Route::get('memberships', [MembershipController::class, 'index'])->name('memberships.index');
     Route::get('add-memberships', [MembershipController::class, 'create']);
     Route::post('create-memberships', [MembershipController::class, 'store']);
@@ -71,7 +64,7 @@ Route::middleware('admin')->group(function () {
     Route::get('add-vallet-information/{id}', [UserValletController::class, 'create']);
     Route::post('save-vallet', [UserValletController::class, 'store']);
     Route::get('user-recharge-history/{id}', [MembersController::class, 'user_recharge_history'])->name('user.recharge.history');
-    
+
     // Funds Approval Routes
     Route::get('/admin/deposit-requests', [FundsController::class, 'depositRequests'])->name('admin.deposit.requests');
     Route::get('/admin/redemption-requests', [FundsController::class, 'redemptionRequests'])->name('admin.redemption.requests');
@@ -81,6 +74,7 @@ Route::middleware('admin')->group(function () {
     // Platform Wallet Settings Routes
     Route::get('/admin/platform-wallet', [PlatformWalletController::class, 'edit'])->name('admin.platform.wallet');
     Route::post('/admin/platform-wallet', [PlatformWalletController::class, 'update'])->name('admin.platform.wallet.update');
+    Route::post('/admin/order-settings', [PlatformWalletController::class, 'updateOrderSettings'])->name('admin.order.settings.update');
 
     // Support Chat Routes
     Route::get('admin/chats', [AdminChatController::class, 'index'])->name('admin.chats.index');
@@ -111,7 +105,6 @@ Route::match(['get', 'post'], 'support', [OrdersController::class, 'support'])->
 Route::get('wallet-information', [ProfileController::class, 'showWalletInformation'])->name('wallet-information')->middleware('auth');
 Route::post('wallet-information', [ProfileController::class, 'storeWalletInformation'])->name('wallet-information.save')->middleware('auth');
 Route::view('company-information', 'user.company-information')->name('company-information')->middleware('auth');
-Route::get('invitation', [ProfileController::class, 'invitation'])->name('invitation')->middleware('auth');
 Route::view('security', 'user.security')->name('security')->middleware('auth');
 Route::view('termsconditions', 'user.termsconditions')->name('termsconditions')->middleware('auth');
 Route::view('faq', 'user.faq')->name('faq')->middleware('auth');

@@ -14,13 +14,11 @@ return new class extends Migration
     public function up()
     {
         Schema::create('selected_orders', function (Blueprint $table) {
-            Schema::create('selected_orders', function (Blueprint $table) {
-                $table->id();
-                $table->foreignId('user_id');
-                $table->foreignId('order_list_id');
-                $table->integer('after_order_number');
-                $table->timestamps();
-            });
+            $table->id();
+            $table->foreignId('user_id');
+            $table->foreignId('order_list_id');
+            $table->integer('order_after');
+            $table->timestamps();
         });
     }
 

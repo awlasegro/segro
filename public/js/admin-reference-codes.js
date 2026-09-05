@@ -21,7 +21,7 @@ function generateReferenceCode() {
         .then(function (data) {
             document.getElementById('generated-code-value').value = data.code;
             document.getElementById('generated-code-url').value =
-                window.location.origin + '/user-register?ref=' + encodeURIComponent(data.code);
+                window.location.origin + '/user-register?refrence-code=' + encodeURIComponent(data.code);
             document.getElementById('generated-code-copied-msg').style.display = 'none';
             document.getElementById('generated-url-copied-msg').style.display = 'none';
             $('#generated-code-modal').modal('show');

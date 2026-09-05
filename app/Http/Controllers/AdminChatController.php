@@ -115,11 +115,12 @@ class AdminChatController extends Controller
     }
 
     /**
-     * Every user with at least one message, latest activity first.
+     * Every user with at least one message, latest activity first. Also used
+     * by the navbar chat dropdown composer (see AppServiceProvider::boot()).
      *
      * @return \Illuminate\Support\Collection
      */
-    private function buildConversationsList()
+    public function buildConversationsList()
     {
         $userIds = ChatMessage::select('user_id')->distinct()->pluck('user_id');
 

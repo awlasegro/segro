@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\OrderSetting;
 use App\Models\PlatformWallet;
 use Illuminate\Http\Request;
 
@@ -18,7 +19,22 @@ class PlatformWalletController extends Controller
             ]);
         }
 
-        return view('admin.platform-wallet', compact('wallet'));
+        $orderSettings = OrderSetting::current();
+
+        return view('admin.platform-wallet', compact('wallet', 'orderSettings'));
+    }
+
+    public function updateOrderSettings(Request $request)
+    {
+        $request->validate([
+            'selected_order_commission_rate' => 'required|numeric|min:0|max:100',
+        ]);
+
+        $orderSettings = OrderSetting::current();
+        $orderSettings->selected_order_commission_rate = $request->input('selected_order_commission_rate');
+        $orderSettings->save();
+
+        return redirect()->back()->with('success', 'Order settings updated successfully!');
     }
 
     public function update(Request $request)

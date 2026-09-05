@@ -58,11 +58,27 @@
                   </div>
               </div>
               <!-- /.form group -->
+              <!--Blockchain -->
+              <div class="form-group">
+                <label>Blockchain</label>
+                  <div class="input-group" id="reservationdatetime" data-target-input="nearest">
+                    <label for="blockchain" name="blockchain" class="form-control">{{ $valletInformation->blockchain ?? 'N/A' }}</label>
+                  </div>
+              </div>
+              <!-- /.form group -->
+              <!--Phone on file -->
+              <div class="form-group">
+                <label>Phone on File</label>
+                  <div class="input-group" id="reservationdatetime" data-target-input="nearest">
+                    <label for="phone" name="phone" class="form-control">{{ $valletInformation->phone ?? 'N/A' }}</label>
+                  </div>
+              </div>
+              <!-- /.form group -->
 
               <input type="hidden" name="id" value="{{ $user->id }}">
               <!-- form Buttons -->
               <div class="form-group">
-                        <input type="reset" class="btn btn-dark" value="Back to Users"/>
+                        <a href="{{ route('member.show', $user->id) }}" class="btn btn-dark">Back to Member</a>
                         <input type="submit" class="btn btn-danger" value="Update Information">
                 </div>
                  <!-- /.form buttonss -->

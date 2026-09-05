@@ -5,7 +5,6 @@ use App\Models\Funds;
 use App\Models\Orders;
 use App\Models\Members;
 use App\Models\Membership;
-use App\Models\ReferenceCodes;
 use App\Models\OrderList;
 use App\Models\UserVallet;
 use Illuminate\Support\Facades\Auth;
@@ -14,6 +13,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Session;
@@ -316,71 +316,72 @@ class ProfileController extends Controller
 
     public function userRegisteration(Request $request)
     {
-        // Validate the incoming request. The reference code must be one
-        // issued by an admin (reference_codes table), still active, and not
-        // already used — it's a single-use registration gate, not a
-        // referral/parent link.
+        // The single reference code identifies the existing parent account.
         $validator = Validator::make($request->all(), [
-            'name' => 'required|unique:users,username',
+            'username' => 'required|unique:users,username|max:255',
+            'email' => 'required|email|unique:users,email',
             'password' => 'required|confirmed',
             'wallet-password' => 'required',
-            'refrence-code' => [
-                'required',
-                Rule::exists('reference_codes', 'code')->whereNull('used_by_user_id')->where('status', 'active'),
-            ],
+            'refrence-code' => 'required|exists:users,reference_code',
         ], [
-            'refrence-code.exists' => 'This reference code is invalid, inactive, or has already been used.',
+            'refrence-code.required' => 'Please enter a valid reference code.',
+            'refrence-code.exists' => 'Reference code not found. Please check the code and try again.',
         ]);
 
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        $refCode = ReferenceCodes::available()->where('code', $request->input('refrence-code'))->first();
+        $username = $request->input('username');
+        $referenceUser = User::where('reference_code', $request->input('refrence-code'))->first();
 
-        if (!$refCode) {
+        if (!$referenceUser) {
             return redirect()->back()
-                ->withErrors(['refrence-code' => 'This reference code is invalid, inactive, or has already been used.'])
+                ->withErrors(['refrence-code' => 'Reference code not found. Please check the code and try again.'])
                 ->withInput();
         }
-
-        $name = $request->input('name');
 
         // Create a new user. Built via direct property assignment (not
         // User::create()) because this table also requires username, email,
         // and remember_token — none of which are in User::$fillable, and
         // adding them there would widen mass-assignment exposure elsewhere.
-        $user = new User();
-        $user->name = $name;
-        $user->username = $name;
+        $user = DB::transaction(function () use ($request, $referenceUser, $username) {
+            $user = new User();
+            $user->name = $username;
+            $user->username = $username;
         // The users table requires a unique-looking, non-null email even
         // though nothing in the app currently reads it (login is by
         // username, not email).
-        $user->email = Str::slug($name, '.') . '_' . Str::lower(Str::random(6)) . '@placeholder.local';
+            $user->email = $request->input('email');
         // Phone is no longer collected on this form, but the column is still
         // NOT NULL and unique — auto-generate a placeholder instead.
-        $user->phone = 'N/A-' . strtoupper(Str::random(8));
-        $user->password = Hash::make($request->input('password'));
-        $user->vallet_password = Hash::make($request->input('wallet-password'));
+            $user->phone = 'N/A-' . strtoupper(Str::random(8));
+            $user->password = Hash::make($request->input('password'));
+            $user->vallet_password = Hash::make($request->input('wallet-password'));
         // NOT NULL with no default on this table — must be set explicitly.
-        $user->remember_token = Str::random(10);
-        // The parent/referral system has been retired — reference_code and
-        // parent_id are still NOT NULL columns, so they're set to inert
-        // placeholder values rather than actually being used for anything.
-        $user->reference_code = strtoupper(Str::random(6));
-        $user->parent_id = 0;
-        $user->membership_level_id = 1;
-        $user->credibility = 100;
-        $user->status = 'active';
-        $user->user_type = 0;
-        $user->min_withdraw = 50;
-        $user->max_withdraw = 500;
-        $user->save();
+            $user->remember_token = Str::random(10);
+        // Generate the new user's personal reference code and link the
+        // account to the user who owns the submitted reference code.
+            do {
+                $user->reference_code = strtoupper(Str::random(6));
+            } while (User::where('reference_code', $user->reference_code)->exists());
+            $user->parent_id = $referenceUser->id;
+            $user->membership_level_id = 1;
+            $user->credibility = 100;
+            $user->status = 'active';
+            $user->user_type = 0;
+            $user->min_withdraw = 50;
+            $user->max_withdraw = 3000;
+            $user->save();
 
-        // Mark the admin-issued reference code as consumed by this user.
-        $refCode->used_by_user_id = $user->id;
-        $refCode->used_at = now();
-        $refCode->save();
+            $user->funds()->create([
+                'amount' => 15,
+                'type' => 'deposit',
+                'status' => 'active',
+            ]);
+
+            return $user;
+        });
 
         // Redirect to login page
         return redirect()->route('user.login');
@@ -429,17 +430,6 @@ class ProfileController extends Controller
 
         return redirect()->route('wallet-information')->with('success', 'Wallet information saved successfully.');
     }
-    public function invitation()
-    {// Get the currently authenticated user
-        $user = Auth::user();
-
-        // Fetch the invitation code from the user's record
-        $invitationCode = $user->reference_code;
-
-        // Pass the invitation code to the view
-        return view('user.invitation', ['invitationCode' => $invitationCode]);
-    }
-
     public function showBalanceinRecharge()
     {
         // Get the current logged-in user
@@ -683,7 +673,7 @@ class ProfileController extends Controller
         ]);
 
         $user = Auth::user();
-        
+
         $imageName = null;
         if ($request->hasFile('screenshot')) {
             $image = $request->file('screenshot');
