@@ -70,7 +70,7 @@
         <!-- Wallet strip: balance, earnings, daily limit at a glance -->
         <div class="wallet-strip">
             <div class="wallet-strip-item">
-                <span class="wallet-strip-value">${{ number_format($totalBalance, 2) }}</span>
+                <span class="wallet-strip-value">{{ $totalBalance < 0 ? '-$' . number_format(abs($totalBalance), 2) : '$' . number_format($totalBalance, 2) }}</span>
                 <span class="wallet-strip-label">Balance</span>
             </div>
             <div class="wallet-strip-item">
@@ -79,7 +79,7 @@
             </div>
             <div class="wallet-strip-item">
                 <span class="wallet-strip-value">{{ $membership->order_limit }}</span>
-                <span class="wallet-strip-label">Daily Limit</span>
+                <span class="wallet-strip-label">Order Limit</span>
             </div>
         </div>
 

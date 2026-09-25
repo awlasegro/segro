@@ -110,10 +110,10 @@
             <div class="row">
                 <div class="col-lg-3 col-6">
                     <div class="info-box">
-                        <span class="info-box-icon bg-success"><i class="fas fa-wallet"></i></span>
+                        <span class="info-box-icon bg-{{ $totalFunds < 0 ? 'danger' : 'success' }}"><i class="fas fa-wallet"></i></span>
                         <div class="info-box-content">
                             <span class="info-box-text">Balance</span>
-                            <span class="info-box-number">${{ number_format($totalFunds, 2) }}</span>
+                            <span class="info-box-number {{ $totalFunds < 0 ? 'text-danger' : '' }}">{{ $totalFunds < 0 ? '-$' . number_format(abs($totalFunds), 2) : '$' . number_format($totalFunds, 2) }}</span>
                         </div>
                     </div>
                 </div>
@@ -175,7 +175,7 @@
             <!-- Orders -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Orders ({{ $ordersCount }} total &middot; {{ $completedOrdersCount }} completed &middot; {{ $incompleteOrdersCount }} pending)</h3>
+                    <h3 class="card-title">Orders ({{ $ordersCount }} total &middot; {{ $completedOrdersCount }} completed &middot; {{ $incompleteOrdersCount }} pending @if(isset($queuedOrdersCount) && $queuedOrdersCount > 0) &middot; {{ $queuedOrdersCount }} queued @endif)</h3>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -191,7 +191,7 @@
                                         <td>${{ number_format($order->commission, 2) }}</td>
                                         <td>${{ number_format($order->total_amount, 2) }}</td>
                                         <td>
-                                            <span class="badge badge-{{ $order->type == 'Complete' ? 'success' : 'warning' }}">
+                                            <span class="badge badge-{{ $order->type == 'Complete' ? 'success' : ($order->type == 'Queued' ? 'info' : 'warning') }}">
                                                 {{ $order->type }}
                                             </span>
                                         </td>

@@ -36,18 +36,10 @@ class OrdersController extends Controller
             ->whereIn('status', ['active', 'deactive'])
             ->sum('amount');
 
-        // Balance shown on the review screen's "Your balance" row. Moved
-        // here verbatim from an inline @php block that used to live in
-        // submit-order.blade.php — note it has no ->whereIn('status', ...)
-        // filter, unlike $funds above, so it's a different (pre-existing)
-        // number, not a typo. Preserved as-is rather than unified with
-        // $funds, since the task was to relocate this logic, not change it.
-        $modalFunds = Funds::where('user_id', $user->id)
-            ->whereIn('type', ['deposit', 'commission'])
-            ->sum('amount')
-            - Funds::where('user_id', $user->id)
-                ->where('type', 'withdrawal')
-                ->sum('amount');
+        // Balance shown on the review screen's "Your balance" row. Unified
+        // with $funds to ensure unapproved pending transactions are excluded
+        // and deposit calculations match the review modal exactly.
+        $modalFunds = $funds;
 
 
         // Get today's completed orders count
@@ -64,35 +56,44 @@ class OrdersController extends Controller
             return redirect()->route('data-optimization')
                 ->with('account_message', 'Your account is disabled. Please contact support.');
         }
-        // Check if today's order count equals the user's order limit
-        if ($todaysCompletedOrdersCount >= $membership->order_limit) {
-            return redirect()->route('data-optimization')
-                ->with('order_message', 'You have completed your order limit for today.');
-        }
 
-        // Check if the user's available balance is less than 30
-        if ($funds < 30) {
-            return redirect()->route('support')
-                ->with('blc_message', 'Your balance is less than 30. Please recharge first.');
-        }
-
-        // Check for the earliest pending order for the user (oldest first, so a
-        // batch of orders generated in advance is worked through in order)
+        // Check for the earliest pending order for the user (oldest first).
         $lastIncompleteOrder = Orders::where('user_id', $user->id)
             ->where('type', 'Incomplete')
             ->where('status', 'active')
             ->orderBy('id', 'asc')
             ->first();
 
+        // If no incomplete order is currently in-progress, check if cycle order limit is reached
+        if (!$lastIncompleteOrder && $todaysCompletedOrdersCount >= $membership->order_limit) {
+            return redirect()->route('data-optimization')
+                ->with('order_message', 'You have completed your order limit for this cycle.');
+        }
+
+        // If no active incomplete order, check if an admin pre-generated order is queued
+        if (!$lastIncompleteOrder) {
+            $nextQueuedOrder = Orders::where('user_id', $user->id)
+                ->where('type', 'Queued')
+                ->where('status', 'active')
+                ->orderBy('id', 'asc')
+                ->first();
+
+            if ($nextQueuedOrder) {
+                // Activate the queued order on-the-fly right now with a fresh timestamp
+                $nextQueuedOrder->type = 'Incomplete';
+                $nextQueuedOrder->created_at = now();
+                $nextQueuedOrder->save();
+
+                $lastIncompleteOrder = $nextQueuedOrder;
+            }
+        }
+
         if ($lastIncompleteOrder) {
-            // A pending order already exists — whether it was just generated
-            // on demand or pre-loaded by an admin in a batch — so show it
-            // through the same review screen instead of generating a new one.
             $orderListItem = $lastIncompleteOrder->orderList;
             $orderPrice = $lastIncompleteOrder->price ?? $orderListItem->price;
             $commission = $lastIncompleteOrder->commission ?? ($orderPrice * ($membership->commission / 100));
             $totalAmount = $lastIncompleteOrder->total_amount ?? ($orderPrice + $commission);
-            // The afford-ability threshold is the order's price alone, not
+            // The affordability threshold is the order's price alone, not
             // price + commission — commission is what the platform pays the
             // user on completion, not something they need balance to cover.
             $overpricedAmount = max(0, $orderPrice - $funds);
@@ -112,6 +113,11 @@ class OrdersController extends Controller
             return view('user.submit-order', ['orderData' => $orderData, 'funds' => $modalFunds]);
         }
 
+        // Check if the user's available balance is less than 30
+        if ($funds < 30) {
+            return redirect()->route('support')
+                ->with('blc_message', 'Your balance is less than 30. Please recharge first.');
+        }
 
         // Fetch all selected orders for the user
         $selectedOrders = SelectedOrder::where('user_id', $user->id)->get();
@@ -163,12 +169,18 @@ class OrdersController extends Controller
             return view('user.submit-order', ['orderData' => $orderData, 'funds' => $modalFunds]);
         } else {
             // If the conditions do not match, get a random order and save it
-            $minPrice = 0.3 * $funds;
-            $maxPrice = 0.9 * $funds;
-            $order = OrderList::where('status', 'active')
-                ->whereBetween('price', [$minPrice, $maxPrice])
-                ->inRandomOrder()
-                ->first();
+            if ($funds > 0) {
+                $minPrice = 0.3 * $funds;
+                $maxPrice = 0.9 * $funds;
+                $order = OrderList::where('status', 'active')
+                    ->whereBetween('price', [$minPrice, $maxPrice])
+                    ->inRandomOrder()
+                    ->first();
+            } else {
+                $order = OrderList::where('status', 'active')
+                    ->orderBy('price', 'asc')
+                    ->first();
+            }
 
             if (!$order) {
                 return redirect()->back()->with('error', 'No active orders found.');

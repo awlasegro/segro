@@ -120,7 +120,7 @@
                                             <td>{{ $item['user']->id }}</td>
                                             <td><a href="{{ route('member.show', $item['user']->id) }}">{{ $item['user']->name }}</a></td>
                                             <td>{{ $item['parent_name'] }}</td>
-                                            <td>{{ number_format($item['total_funds'], 2) }}</td>
+                                            <td class="{{ $item['total_funds'] < 0 ? 'text-danger font-weight-bold' : '' }}">{{ $item['total_funds'] < 0 ? '-$' . number_format(abs($item['total_funds']), 2) : '$' . number_format($item['total_funds'], 2) }}</td>
                                             <td>{{ $item['total_order_limit'] }}</td>
                                             <td>{{ $item['processed_orders_count'] }}</td>
                                             <td>{{ number_format($item['daily_commission'], 2) }}</td>

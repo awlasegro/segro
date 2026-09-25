@@ -58,6 +58,14 @@
                   </div>
               </div>
               <!-- /.form group -->
+              <!--Phone Number -->
+              <div class="form-group">
+                <label>Phone Number</label>
+                <div class="input-group">
+                  <input type="tel" name="phone" class="form-control" value="{{ old('phone', $walletInformation->phone) }}" required>
+                </div>
+              </div>
+              <!-- /.form group -->
               <!--Vallet Type -->
               <div class="form-group">
                 <label>Vallet Type</label>

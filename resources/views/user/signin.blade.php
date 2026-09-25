@@ -18,7 +18,7 @@
         <div class="glass-header">
             <img src="{{ asset('images/logo-dark.png') }}" alt="SEGRO" class="glass-logo">
             <h1>Member Login</h1>
-            <p>Access your elite dashboard and review tasks</p>
+            <p>Access your elite dashboard and review orders</p>
         </div>
 
         @if (session('status'))

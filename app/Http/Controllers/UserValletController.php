@@ -6,7 +6,6 @@ use App\Http\Requests\UpdateUserValletRequest;
 use App\Models\User;
 use App\Models\UserVallet;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class UserValletController extends Controller
 {
@@ -50,6 +49,7 @@ class UserValletController extends Controller
         $request->validate([
             'id' => 'required|exists:users,id|unique:user_vallets,user_id',
             'valletAddress' => 'required|string|max:255',
+            'phone' => 'required|string|max:255',
             'valletType' => 'required|string|in:TRC20,ERC20,ETH,BTC',
             'blockchain' => 'required|string|in:TRON,Ethereum,Bitcoin,BSC',
         ]);
@@ -57,11 +57,9 @@ class UserValletController extends Controller
         $vallet = new UserVallet();
         $vallet->user_id = $request->input('id');
         $vallet->vallet_address = $request->input('valletAddress');
+        $vallet->phone = $request->input('phone');
         $vallet->type = $request->input('valletType');
         $vallet->blockchain = $request->input('blockchain');
-        // Phone is no longer collected on this form, but the column is
-        // still NOT NULL — auto-generate a placeholder instead.
-        $vallet->phone = 'N/A-' . strtoupper(Str::random(8));
         $vallet->save();
 
         return redirect('/administration')->with('walletUpdateSuccess', 'Wallet information created successfully.');
@@ -108,6 +106,7 @@ return view('admin.update-wallet-information', compact('walletInformation', 'use
     {
         $request->validate([
             'vallet_address' => 'required|string|max:255',
+            'phone' => 'required|string|max:255',
             'wallet_type' => 'required|string|in:TRC20,ERC20,ETH,BTC',
             'blockchain' => 'required|string|in:TRON,Ethereum,Bitcoin,BSC',
             'id' => 'required|exists:user_vallets,id',
@@ -120,10 +119,8 @@ return view('admin.update-wallet-information', compact('walletInformation', 'use
             return redirect()->back()->with('error', 'Wallet information not found.');
         }
 
-        // Update the wallet information. Phone is no longer editable here —
-        // whatever value the row already has (real or placeholder) is left
-        // untouched.
         $user->vallet_address = $request->input('vallet_address');
+        $user->phone = $request->input('phone');
         $user->type = $request->input('wallet_type');
         $user->blockchain = $request->input('blockchain');
         $user->save();

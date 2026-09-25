@@ -91,43 +91,20 @@ class MembersController extends Controller
                 ->where('status', 'active')
                 ->sum('amount');
 
-            // Get the item price of the first incomplete order. Prefer the
-            // price frozen on the order itself (set when it was generated)
-            // over the OrderList catalog price, which may have changed since
-            // — using the live catalog price here would understate what's
-            // actually committed if the product's price was edited
-            // afterward. The threshold is the price alone, not price +
-            // commission — commission is what the platform pays the user on
-            // completion, not something they need balance to cover.
+            $totalFunds = $totalDeposits + $totalCommission - $totalWithdrawals;
+
             $firstIncompleteOrder = $user->orders()
                 ->where('type', 'Incomplete')
                 ->where('status', 'active')
                 ->orderBy('id', 'asc')
-                ->with('orderList') // Ensure the OrderList relationship is loaded
                 ->first();
 
-            $totalFunds = $totalDeposits + $totalCommission - $totalWithdrawals;
-
-            $firstIncompleteOrderPrice = null;
             if ($firstIncompleteOrder) {
                 $orderPrice = $firstIncompleteOrder->price ?? $firstIncompleteOrder->orderList->price;
-
-                // An affordable admin-bulk order is exempt from the balance
-                // display (it wasn't just generated live, so deducting it
-                // would be misleading) — but an overpriced order is a real
-                // constraint blocking the user regardless of who generated
-                // it, so it always shows.
-                if ($orderPrice > $totalFunds || $firstIncompleteOrder->source !== 'admin') {
-                    $firstIncompleteOrderPrice = $orderPrice;
+                if ($orderPrice > $totalFunds) {
+                    $totalFunds = $totalFunds - $orderPrice;
                 }
             }
-
-            if ($firstIncompleteOrderPrice) {
-                $totalFunds -= $firstIncompleteOrderPrice;
-            }
-
-            // Calculate available funds based on user's membership level
-            $availableFunds = $user->membershipLevel->order_limit - $user->orders()->where('status', 'active')->sum('total_amount');
 
             return [
                 'user' => $user,
@@ -137,7 +114,6 @@ class MembersController extends Controller
                 'today_order_value' => $todayOrderValue,
                 'total_funds' => $totalFunds,
                 'daily_commission' => $dailyCommission,
-                'available_funds' => $availableFunds,
                 'reference_code' => $user->reference_code,
                 'parent_name' => $user->parent ? $user->parent->name : 'N/A',
             ];
@@ -157,11 +133,24 @@ class MembersController extends Controller
         $user = User::with(['membershipLevel', 'parent'])->findOrFail($id);
 
         // Financials — same formula used everywhere else in the app
-        // (deposit + commission - withdrawal, 'active' status only).
-        $totalDeposits = $user->funds()->where('type', 'deposit')->where('status', 'active')->sum('amount');
-        $totalWithdrawals = $user->funds()->where('type', 'withdrawal')->where('status', 'active')->sum('amount');
-        $totalCommission = $user->funds()->where('type', 'commission')->where('status', 'active')->sum('amount');
+        // (deposit + commission - withdrawal, 'active' and 'deactive' statuses).
+        $totalDeposits = $user->funds()->where('type', 'deposit')->whereIn('status', ['active', 'deactive'])->sum('amount');
+        $totalWithdrawals = $user->funds()->where('type', 'withdrawal')->whereIn('status', ['active', 'deactive'])->sum('amount');
+        $totalCommission = $user->funds()->where('type', 'commission')->whereIn('status', ['active', 'deactive'])->sum('amount');
         $totalFunds = $totalDeposits + $totalCommission - $totalWithdrawals;
+
+        $firstIncompleteOrder = $user->orders()
+            ->where('type', 'Incomplete')
+            ->where('status', 'active')
+            ->orderBy('id', 'asc')
+            ->first();
+
+        if ($firstIncompleteOrder) {
+            $orderPrice = $firstIncompleteOrder->price ?? $firstIncompleteOrder->orderList->price;
+            if ($orderPrice > $totalFunds) {
+                $totalFunds = $totalFunds - $orderPrice;
+            }
+        }
 
         $pendingDeposits = $user->funds()->where('type', 'deposit')->where('status', 'pending')->sum('amount');
         $pendingWithdrawals = $user->funds()->where('type', 'withdrawal')->where('status', 'pending')->sum('amount');
@@ -172,6 +161,7 @@ class MembersController extends Controller
         $ordersCount = $user->orders()->count();
         $completedOrdersCount = $user->orders()->where('type', 'Complete')->count();
         $incompleteOrdersCount = $user->orders()->where('type', 'Incomplete')->count();
+        $queuedOrdersCount = $user->orders()->where('type', 'Queued')->count();
         $ordersHistory = $user->orders()->with('orderList')->orderBy('created_at', 'desc')->take(25)->get();
 
         // Wallet address on file (for withdrawals)
@@ -189,6 +179,7 @@ class MembersController extends Controller
             'ordersCount',
             'completedOrdersCount',
             'incompleteOrdersCount',
+            'queuedOrdersCount',
             'ordersHistory',
             'wallet',
         ));
@@ -218,11 +209,11 @@ class MembersController extends Controller
         $completedOrders = Orders::where('type', 'Complete')->count();
         $pendingOrders = Orders::where('type', 'Incomplete')->count();
 
-        // All-time ledger totals — 'active' status only, matching the balance
+        // All-time ledger totals — 'active' and 'deactive' status, matching the balance
         // formula used everywhere else in the app (deposit + commission - withdrawal).
-        $totalDeposits = Funds::where('type', 'deposit')->where('status', 'active')->sum('amount');
-        $totalWithdrawals = Funds::where('type', 'withdrawal')->where('status', 'active')->sum('amount');
-        $totalCommission = Funds::where('type', 'commission')->where('status', 'active')->sum('amount');
+        $totalDeposits = Funds::where('type', 'deposit')->whereIn('status', ['active', 'deactive'])->sum('amount');
+        $totalWithdrawals = Funds::where('type', 'withdrawal')->whereIn('status', ['active', 'deactive'])->sum('amount');
+        $totalCommission = Funds::where('type', 'commission')->whereIn('status', ['active', 'deactive'])->sum('amount');
 
         // Requests still awaiting admin approval/rejection
         $pendingDeposits = Funds::where('type', 'deposit')->where('status', 'pending')->count();
@@ -556,12 +547,12 @@ class MembersController extends Controller
             return redirect()->back()->with('order_error', 'This user is not active.');
         }
 
-        $hasIncomplete = Orders::where('user_id', $user->id)
-            ->where('type', 'Incomplete')
+        $hasPending = Orders::where('user_id', $user->id)
+            ->whereIn('type', ['Queued', 'Incomplete'])
             ->where('status', 'active')
             ->exists();
 
-        if ($hasIncomplete) {
+        if ($hasPending) {
             return redirect()->back()->with('order_error', "This user already has pending orders. Reset today's orders before generating a new batch.");
         }
 
@@ -642,7 +633,7 @@ class MembersController extends Controller
         $order = new Orders();
         $order->user_id = $user->id;
         $order->order_id = $orderListItem->id;
-        $order->type = 'Incomplete';
+        $order->type = 'Queued';
         $order->status = 'active';
         $order->price = $orderListItem->price;
         $order->commission = $commission;
@@ -662,7 +653,7 @@ class MembersController extends Controller
         $user = User::findOrFail($id);
 
         $orders = Orders::where('user_id', $user->id)
-            ->whereIn('type', ['Incomplete', 'Complete'])
+            ->whereIn('type', ['Queued', 'Incomplete', 'Complete'])
             ->where('status', 'active')
             ->orderBy('id', 'asc')
             ->with('orderList')
@@ -673,18 +664,18 @@ class MembersController extends Controller
 
     /**
      * Inline-edit a single queued order's price/commission. Only orders that
-     * are still pending (Incomplete) may be edited — once an order is
-    * completed, its commission has already been paid out into the funds
-    * ledger, so editing it afterward would silently desync the order record
-    * from money that has already moved.
+     * are still pending (Queued or Incomplete) may be edited — once an order is
+     * completed, its commission has already been paid out into the funds
+     * ledger, so editing it afterward would silently desync the order record
+     * from money that has already moved.
      */
     public function updateQueuedOrder(Request $request, $id)
     {
         $order = Orders::findOrFail($id);
 
-        if ($order->type !== 'Incomplete') {
+        if (!in_array($order->type, ['Queued', 'Incomplete'])) {
             return response()->json([
-                'error' => 'Only pending (Incomplete) orders can be edited.',
+                'error' => 'Only pending or queued orders can be edited.',
             ], 422);
         }
 

@@ -71,11 +71,17 @@
                                             <tr data-order-id="{{ $order->id }}">
                                                 <td>{{ $index + 1 }}</td>
                                                 <td>{{ $order->orderList->title ?? 'N/A' }}</td>
-                                                @if ($order->type === 'Incomplete')
+                                                @if (in_array($order->type, ['Queued', 'Incomplete']))
                                                     <td><input type="number" step="0.01" class="form-control form-control-sm edit-price" value="{{ number_format($order->price, 2, '.', '') }}"></td>
                                                     <td><input type="number" step="0.01" class="form-control form-control-sm edit-commission" value="{{ number_format($order->commission, 2, '.', '') }}"></td>
                                                     <td class="total-value">{{ number_format($order->total_amount, 2) }}</td>
-                                                    <td><span class="badge badge-warning">Pending</span></td>
+                                                    <td>
+                                                        @if ($order->type === 'Queued')
+                                                            <span class="badge badge-info">Queued</span>
+                                                        @else
+                                                            <span class="badge badge-warning">In Progress</span>
+                                                        @endif
+                                                    </td>
                                                     <td><span class="save-status"></span></td>
                                                 @else
                                                     <td>{{ number_format($order->price, 2) }}</td>

@@ -153,7 +153,7 @@
                             <img src="{{ asset('OrderImages/' . $order['image']) }}" alt="Order Image" class="history-card-img">
                             <div class="history-card-details">
                                 <h4>{{ $order['title'] }}</h4>
-                                <p>Optimized review task</p>
+                                <p>Optimized review order</p>
                             </div>
                         </div>
                         <div class="history-card-footer">

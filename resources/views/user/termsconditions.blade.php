@@ -38,8 +38,7 @@
         </div>
 
         <div class="info-hero">
-            <h1>Club Rules &amp; Conditions</h1>
-            <p>Welcome to Segro. Segro provides exclusive, invitation-only, luxury lifestyle management and review optimization services.</p>
+            <h1>New platform terms and conditions</h1>
         </div>
 
         <div class="card" style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.6;">
@@ -47,36 +46,65 @@
             <div style="display: flex; flex-direction: column; gap: 20px;">
                 <div>
                     <h3 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">1. Account Registration</h3>
-                    <p>1.1. You must be at least 18 years old to create an account on Segro.<br>
-                       1.2. Each phone number can only be registered to one account.<br>
-                       1.3. Do not re-bind the same wallet to another platform account.<br>
-                       1.4. Keep your account and redemption passwords confidential. The platform is not liable for unauthorized access.</p>
+                    <p>All members must be at least 18 years of age to register and create an account on SEGRO.<br><br>
+
+Each phone number may only be used to register and verify a single account on SEGRO. Users are not permitted to create multiple accounts using the same phone number.<br><br>
+
+Users must not link or re-bind the same wallet to multiple platform accounts. Any unauthorized use of the same wallet across different accounts may result in appropriate action, including account restrictions or other measures as deemed necessary by the platform.</p>
                 </div>
 
                 <div>
-                    <h3 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">2. Platform Usage</h3>
-                    <p>2.1. The system randomly allocates data orders. Once allocated, changes, cancellations, or abandonment are strictly prohibited.<br>
-                       2.2. Inappropriate use will result in legal action.<br>
-                       2.3. Users must comply with all applicable local and international regulations.<br>
-                       2.4. Verification steps may be required before withdrawals are fully processed.<br>
-                       2.5. The platform reserves the right to restrict access to users violating these rules.</p>
+                    <h3 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">2. Platform Usage:</h3>
+                    <p>The system randomly assigns Luxury Package Lots to active users. Once an Luxury Package has been allocated, users are not permitted to modify, cancel, or abandon the assigned lots.<br><br>
+
+Any inappropriate, unauthorized, or fraudulent use of an account is strictly prohibited. The platform reserves the right to take appropriate action, including account restrictions, suspension, termination, and pursuing legal remedies where necessary.<br><br>
+
+The platform may require additional verification steps, such as identity verification or address verification, before allowing users to use certain features.<br><br>
+
+Users must not share their account information, including login credentials and redemption codes, with anyone else.<br><br>
+
+The platform reserves the right to restrict or terminate a user's access to certain features or services if the user violates any of the terms and conditions.<br><br>
+
+Users agree to receive communications from the platform, including account-related messages, notifications, updates, and information regarding Luxury Package Deals or other platform services. Users acknowledge that these communications are necessary to provide important account updates and service-related information.</p>
                 </div>
 
                 <div>
-                    <h3 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">3. Data Orders</h3>
-                    <p>3.1. Ensure all data orders are completed before requesting redemption.<br>
-                       3.2. Accounts with a balance of less than $50 cannot accept data orders.<br>
-                       3.3. Daily orders must be completed within 24 hours of generation.<br>
-                       3.4. Daily orders may contain premium ultimate data with higher commission rates.<br>
-                       3.5. Postponing orders requires merchant approval and is subject to deferral charges.</p>
+                    <h3 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">3. Data Orders:</h3>
+                    <p>Users must ensure that all assigned Lot orders are fully completed before requesting account redemption or resetting their account.<br><br>
+
+Accounts with a balance below $50 are not eligible to accept or generate Lot Orders. Users must maintain a minimum account balance of $50 before initiating any Lot Orders. The minimum redemption amount available on the platform is $50. Users are responsible for ensuring that their account balance meets the required threshold to access these services.<br><br>
+
+Users must complete all assigned Lot Orders within 48 hours of acceptance. If a user is unable to complete the assigned Lot Orders within the required timeframe, they must contact customer service immediately and provide relevant details for assistance. Failure to complete orders or notify customer service within the specified period may result in appropriate action by the platform.<br><br>
+
+Daily Lots may include 0–3 Luxury Package Data Bundles, which are assigned randomly by the system in 1 to 3 high rebates. The availability and quantity of Luxury Package Data Bundles may vary for each user and each daily Lot assignment.<br><br>
+
+Users must complete all assigned Lot Orders within the specified timeframe. Failure to complete Lots within the required period may result in account restrictions, including possible permanent account freezing. In such cases, access to account funds and withdrawal services may be limited in accordance with platform policies. Users are encouraged to contact customer service promptly if they encounter difficulties completing assigned Lots.</p>
                 </div>
 
                 <div>
-                    <h3 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">4. Redemption Rules</h3>
-                    <p>4.1. Redemptions are only submitted once all daily data orders are finalized.<br>
-                       4.2. Bind your verified payout wallet under Wallet Binding before requesting a withdrawal.<br>
-                       4.3. Standard redemption processing time is within 20 minutes under ordinary operation hours.<br>
-                       4.4. Redemptions require a credibility score of 100%. Contact support if your score drops below 100%.</p>
+                    <h3 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">4. Governing Law and Jurisdiction</h3>
+                    <p>The platform operates in accordance with the applicable laws and regulations of the country in which it operates. All users must comply with relevant legal requirements and agree to respect and follow the platform’s Terms &amp; Conditions, policies, and guidelines. Any violation of applicable laws or platform rules may result in appropriate action being taken by the platform.</p>
+                </div>
+
+                <div>
+                    <h3 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">5. Recharge Policy</h3>
+                    <p>Users may recharge their accounts through the approved payment methods provided by the platform. Users are responsible for ensuring that all recharge information is accurate before completing any transaction.<br><br>
+
+Users need to recharge their accounts using the same wallet. Using a different wallet to recharge the same account will cause the account to be frozen.</p>
+                </div>
+
+                <div>
+                    <h3 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">6. Credibility Score Requirement</h3>
+                    <p>Members must maintain the required credibility score to be eligible to proceed with a withdrawal. A credibility score below the required level may affect the withdrawal process. In such cases, members may be required to complete the applicable requirements before their withdrawal can be processed.</p>
+                </div>
+
+                <div>
+                    <h3 style="font-size: 14.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">7. Contact Information</h3>
+                    <p>If you have any questions regarding these Terms &amp; Conditions, please contact:<br><br>
+
+[SEGRO Live Chat And Telegram PR]<br><br>
+
+By using [SEGRO], you acknowledge that you have read, understood, and agreed to these Terms &amp; Conditions.</p>
                 </div>
             </div>
         </div>

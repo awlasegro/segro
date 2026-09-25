@@ -27,7 +27,7 @@
                         {{ session('success') }}
                     </div>
               @endif
-              
+
               <table class="table table-bordered table-striped" id="example1">
                 <thead>
                   <tr>
@@ -36,6 +36,7 @@
                     <th>Amount ($)</th>
                     <th>Wallet Type</th>
                     <th>Wallet Address</th>
+                    <th>Wallet Phone</th>
                     <th>Request Date</th>
                     <th>Actions</th>
                   </tr>
@@ -48,6 +49,7 @@
                       <td>{{ number_format($req->amount, 2) }}</td>
                       <td>{{ $req->wallet ? strtoupper($req->wallet->type) : 'N/A' }}</td>
                       <td style="font-family: monospace;">{{ $req->wallet ? $req->wallet->vallet_address : 'N/A' }}</td>
+                      <td>{{ $req->wallet ? ($req->wallet->phone ?: 'N/A') : 'N/A' }}</td>
                       <td>{{ $req->created_at->format('Y-m-d H:i:s') }}</td>
                       <td>
                         <div class="d-flex" style="gap: 8px;">

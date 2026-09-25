@@ -110,7 +110,7 @@
                                         </div>
                                         <div class="modal-table-row">
                                             <span>Your balance</span>
-                                            <span style="color: var(--text-primary); font-weight: 600;">${{ number_format($funds, 2) }}</span>
+                                            <span style="color: {{ $funds < 0 ? 'var(--danger-color)' : 'var(--text-primary)' }}; font-weight: 600;">{{ $funds < 0 ? '-$' . number_format(abs($funds), 2) : '$' . number_format($funds, 2) }}</span>
                                         </div>
                                         <div class="modal-table-row" style="color: var(--danger-color); font-weight: 600;">
                                             <span>Deposit needed</span>

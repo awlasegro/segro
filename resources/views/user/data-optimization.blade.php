@@ -6,6 +6,7 @@
     $totalTodayOrders = $userData['total_today_orders'];
     $todayCommission = $userData['today_commission'];
     $overpricedAmount = $userData['overpriced_amount'];
+    $hasPendingOrder = $userData['has_pending_order'];
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -74,7 +75,7 @@
         <!-- Compact wallet strip: quick balance/earnings/orders glance, secondary to the catalog below -->
         <div class="wallet-strip">
             <div class="wallet-strip-item">
-                <span class="wallet-strip-value">${{ number_format($totalBalance, 2) }}</span>
+                <span class="wallet-strip-value">{{ $totalBalance < 0 ? '-$' . number_format(abs($totalBalance), 2) : '$' . number_format($totalBalance, 2) }}</span>
                 <span class="wallet-strip-label">Balance</span>
             </div>
             <div class="wallet-strip-item">
@@ -100,7 +101,7 @@
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle><polyline points="12 8 8 12 12 16"></polyline><line x1="16" y1="12" x2="8" y2="12"></line>
                 </svg>
-                <span>Generate New Order</span>
+                <span>{{ $hasPendingOrder ? 'Continue Order' : 'Generate New Order' }}</span>
             </a>
         </div>
 

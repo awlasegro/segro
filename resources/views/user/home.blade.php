@@ -47,11 +47,11 @@
             </div>
         @endif
 
-        <!-- Unified Overview: balance + 24h metrics + earnings chart, one cohesive hero card -->
+        <!-- Unified Overview: balance + cycle metrics + earnings chart, one cohesive hero card -->
         <div class="hero-balance-card">
             <span class="hero-balance-eyebrow">Welcome back, {{ $user->name }}</span>
             <span class="hero-balance-label">Account Balance</span>
-            <div class="hero-balance-value">${{ number_format($totalBalance, 2) }}</div>
+            <div class="hero-balance-value">{{ $totalBalance < 0 ? '-$' . number_format(abs($totalBalance), 2) : '$' . number_format($totalBalance, 2) }}</div>
 
             <div class="hero-balance-strip">
                 <div class="hero-balance-metric">
@@ -60,11 +60,11 @@
                 </div>
                 <div class="hero-balance-metric">
                     <span class="hero-balance-metric-value">${{ number_format($todayCommission, 2) }}</span>
-                    <span class="hero-balance-metric-label">Commission (24h)</span>
+                    <span class="hero-balance-metric-label">Current earnings</span>
                 </div>
                 <div class="hero-balance-metric">
                     <span class="hero-balance-metric-value">{{ $completedOrdersCount }}<span class="hero-balance-metric-value-sub">/{{ $orderLimit }}</span></span>
-                    <span class="hero-balance-metric-label">Orders (24h)</span>
+                    <span class="hero-balance-metric-label">Completed orders</span>
                 </div>
             </div>
 
@@ -91,14 +91,14 @@
                     </svg>
                 </div>
 
-                <!-- Period summary: amount earned + tasks completed for the selected range -->
+                <!-- Period summary: amount earned + orders completed for the selected range -->
                 <div class="card-feature-footer">
                     <div>
                         <span class="feature-stat-label">Earned</span>
                         <span id="chart-total-earned" class="feature-stat-value">${{ number_format($earningsTotal7d, 2) }}</span>
                     </div>
                     <div>
-                        <span class="feature-stat-label">Tasks Completed</span>
+                        <span class="feature-stat-label">Orders Completed</span>
                         <span id="chart-tasks-completed" class="feature-stat-value">{{ $tasksTotal7d }}</span>
                     </div>
                 </div>

@@ -71,7 +71,7 @@
         <!-- Balance Info Card -->
         <div class="card" style="background-color: var(--accent-color); border-color: var(--accent-color); color: #fff;">
             <p style="font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; opacity: 0.9; margin-bottom: 4px;">Available Balance</p>
-            <h2 style="font-size: 24px; font-weight: 700;">$<span id="display-balance">{{ number_format($adjustedTotalFunds, 2) }}</span></h2>
+            <h2 style="font-size: 24px; font-weight: 700;"><span id="display-balance">{{ $adjustedTotalFunds < 0 ? '-$' . number_format(abs($adjustedTotalFunds), 2) : '$' . number_format($adjustedTotalFunds, 2) }}</span></h2>
             <p style="font-size: 11px; opacity: 0.85; margin-top: 10px;">Kindly verify with our Live Support once submitted. Processed within an hour.</p>
         </div>
 
@@ -96,14 +96,14 @@
                             <div class="preset-chip" onclick="selectPresetAmount(50, this)">50</div>
                             <div class="preset-chip" onclick="selectPresetAmount(100, this)">100</div>
                             <div class="preset-chip" onclick="selectPresetAmount(500, this)">500</div>
-                            <div class="preset-chip" onclick="selectPresetAmount({{ $adjustedTotalFunds }}, this)">All</div>
+                            <div class="preset-chip" onclick="selectPresetAmount({{ $withdrawableBalance }}, this)">All</div>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label for="amount">Amount (USDT)</label>
-                        <input type="number" step="0.01" id="amount" name="amount" placeholder="0.00" min="0.01" max="{{ $adjustedTotalFunds }}" required>
-                        <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Available balance: $<span id="label-balance">{{ number_format($adjustedTotalFunds, 2) }}</span></p>
+                        <input type="number" step="0.01" id="amount" name="amount" placeholder="0.00" min="0.01" max="{{ $withdrawableBalance }}" required {{ $withdrawableBalance <= 0 ? 'disabled' : '' }}>
+                        <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Available balance: <span id="label-balance">{{ $adjustedTotalFunds < 0 ? '-$' . number_format(abs($adjustedTotalFunds), 2) : '$' . number_format($adjustedTotalFunds, 2) }}</span></p>
                     </div>
 
                     <div class="form-group" style="margin-bottom: 25px;">
@@ -129,6 +129,7 @@
                         </div>
                     </div>
                     <div class="payout-card-address" style="font-size: 16px;">{{ $wallet->vallet_address }}</div>
+                    <div class="payout-card-meta">Phone: {{ $wallet->phone ?: 'N/A' }}</div>
                     <div class="payout-card-footer">
                         <div class="payout-card-verified">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">

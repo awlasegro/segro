@@ -3,11 +3,19 @@
     $memberships = \App\Models\Membership::all();
     $currentUserLevelId = $user->membership_level_id;
 
-    // Balance calculation
-    $totalDeposits = $user->funds()->where('type', 'deposit')->sum('amount');
-    $totalWithdrawals = $user->funds()->where('type', 'withdrawal')->sum('amount');
-    $totalCommission = $user->funds()->where('type', 'commission')->sum('amount');
+    // Balance calculation (settled deposits + commission - withdrawals)
+    $totalDeposits = $user->funds()->where('type', 'deposit')->whereIn('status', ['active', 'deactive'])->sum('amount');
+    $totalWithdrawals = $user->funds()->where('type', 'withdrawal')->whereIn('status', ['active', 'deactive'])->sum('amount');
+    $totalCommission = $user->funds()->where('type', 'commission')->whereIn('status', ['active', 'deactive'])->sum('amount');
     $totalBalance = $totalDeposits + $totalCommission - $totalWithdrawals;
+
+    $firstIncompleteOrder = $user->orders()->where('type', 'Incomplete')->where('status', 'active')->orderBy('id', 'asc')->first();
+    if ($firstIncompleteOrder) {
+        $orderPrice = $firstIncompleteOrder->price ?? $firstIncompleteOrder->orderList->price;
+        if ($orderPrice > $totalBalance) {
+            $totalBalance = $totalBalance - $orderPrice;
+        }
+    }
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -45,7 +53,7 @@
         <div class="mb-20">
             <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">Unlock Marketplaces</h2>
             <p style="font-size: 12px; color: var(--text-secondary);">Unlock exclusive tiers and raise your daily order limit.</p>
-            <p style="font-size: 12px; font-weight: 700; color: var(--accent-color); margin-top: 4px;">Available balance: ${{ number_format($totalBalance, 2) }}</p>
+            <p style="font-size: 12px; font-weight: 700; color: {{ $totalBalance < 0 ? 'var(--danger-color)' : 'var(--accent-color)' }}; margin-top: 4px;">Available balance: {{ $totalBalance < 0 ? '-$' . number_format(abs($totalBalance), 2) : '$' . number_format($totalBalance, 2) }}</p>
         </div>
 
         @foreach($memberships as $index => $item)
